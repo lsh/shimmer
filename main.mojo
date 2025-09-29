@@ -1,19 +1,16 @@
 from gl import *
-from gl._metal import (
-    MTLPixelFormatBGRA8Unorm,
-    CGSize,
-    nsgl_context_get_cgl_context,
-)
+
 from glfw import *
 from glad import *
 from objc import *
+from gpu_texture import GPUTexture
 
-from gpu.host._metal import metal_device
 from gpu.host import DeviceContext
 from gpu import global_idx
+from math import ceildiv
 from sys.info import size_of
-from sys.ffi import external_call
 from sys.intrinsics import llvm_intrinsic
+from sys.ffi import external_call
 
 
 fn kernel(ptr: UnsafePointer[UInt32], time: Float32):
@@ -62,10 +59,9 @@ fn init_opengl(
     mut shader_program: UInt32,
     mut vao: UInt32,
     mut vbo: UInt32,
-    mut pbo_id: UInt32,
     vertices: InlineArray[Float32, 20],
     indices: InlineArray[Int32, 6],
-    texture: AAPLOpenGLMetalInteropTexture,
+    texture: GPUTexture,
 ) raises:
     var vertex_shader = compile_shader(GL_VERTEX_SHADER, vertex_shader_source)
     var fragment_shader = compile_shader(
@@ -138,14 +134,13 @@ fn init_opengl(
 fn render(
     shader_program: UInt32,
     texture_id: UInt32,
-    texture_target: UInt32,
     vao: UInt32,
 ):
     gl_clear(GL_COLOR_BUFFER_BIT)
 
     gl_use_program(shader_program)
     gl_active_texture(GL_TEXTURE0)
-    gl_bind_texture(texture_target, texture_id)
+    gl_bind_texture(GL_TEXTURE_RECTANGLE, texture_id)
     gl_bind_vertex_array(vao)
     gl_draw_elements(
         GL_TRIANGLES,
@@ -158,13 +153,11 @@ fn render(
 fn cleanup(
     mut vao: UInt32,
     mut vbo: UInt32,
-    mut pbo_id: UInt32,
     mut texture_id: UInt32,
     mut shader_program: UInt32,
 ):
     gl_delete_vertex_arrays(1, UnsafePointer(to=vao))
     gl_delete_buffers(1, UnsafePointer(to=vbo))
-    gl_delete_buffers(1, UnsafePointer(to=pbo_id))
     gl_delete_textures(1, UnsafePointer(to=texture_id))
     gl_delete_program(shader_program)
 
@@ -176,7 +169,6 @@ fn error_callback(error: Int32, description: UnsafePointer[Int8]):
 
 fn main() raises:
     var texture_id = UInt32(0)
-    var pbo_id = UInt32(0)
     var shader_program = UInt32(0)
     var vao = UInt32(0)
     var vbo = UInt32(0)
@@ -238,29 +230,20 @@ fn main() raises:
     _ = glad_load_gl_loader(glfw_get_proc_address)
 
     with DeviceContext() as ctx:
-        var nsgl_context = glfw_get_ns_gl_context(window)
-        var cgl_context = nsgl_context_get_cgl_context(nsgl_context)
-
-        var tex = AAPLOpenGLMetalInteropTexture(
-            mtl_device=metal_device(ctx).bitcast[NoneType](),
-            gl_context=cgl_context.bitcast[NoneType](),
-            mtl_pixel_format=MTLPixelFormatBGRA8Unorm,
-            size=CGSize(width=640, height=480),
-        )
+        var tex = GPUTexture(width=640, height=480, window=window, ctx=ctx)
         init_opengl(
             vertex_shader_source,
             fragment_shader_source,
             shader_program,
             vao,
             vbo,
-            pbo_id,
             vertices,
             indices,
             tex,
         )
 
         var buf = ctx.enqueue_create_buffer[DType.uint32](
-            Int(tex.size.width) * Int(tex.size.height)
+            tex.width * tex.height
         )
 
         with buf.map_to_host() as mapped:
@@ -276,25 +259,12 @@ fn main() raises:
             ctx.enqueue_function_checked[kernel, kernel](
                 buf,
                 animation_time,
-                grid_dim=(640 * 480 + 255) // 256,
+                grid_dim=ceildiv(640 * 480, 256),
                 block_dim=256,
             )
 
-            with buf.map_to_host() as mapped:
-                cv_pixel_buffer_write_bytes(
-                    tex._cv_pixel_buffer.bitcast[NoneType](),
-                    pixel_bytes=mapped.unsafe_ptr().bitcast[UInt8](),
-                    bytes_per_row=Int(tex.size.width) * 4,
-                    width=Int(tex.size.width),
-                    height=Int(tex.size.height),
-                )
-
-            render(
-                shader_program,
-                tex.open_gl_texture,
-                tex.open_gl_texture_target,
-                vao,
-            )
+            tex.copy_from(buf, ctx)
+            render(shader_program, tex.gl_texture, vao)
 
             animation_time += 0.01
             glfw_swap_buffers(window)

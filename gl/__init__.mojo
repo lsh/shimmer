@@ -1,7 +1,5 @@
 from sys.ffi import external_call
 
-from ._metal import AAPLOpenGLMetalInteropTexture, CGSize
-
 alias GL_COLOR_BUFFER_BIT = 0x00004000
 alias GL_VERTEX_SHADER = 0x8B31
 alias GL_FRAGMENT_SHADER = 0x8B30
@@ -13,10 +11,12 @@ alias GL_FLOAT = 0x1406
 alias GL_FALSE = 0
 alias GL_TRIANGLES = 0x0004
 alias GL_TEXTURE_2D = 0x0DE1
+alias GL_TEXTURE_RECTANGLE = 0x84F5
 alias GL_LINEAR = 0x2601
 alias GL_CLAMP_TO_EDGE = 0x812F
 alias GL_RGBA8 = 0x8058
 alias GL_RGBA = 0x1908
+alias GL_BGRA = 0x80E1
 alias GL_UNSIGNED_BYTE = 0x1401
 alias GL_TEXTURE_MIN_FILTER = 0x2801
 alias GL_TEXTURE_MAG_FILTER = 0x2800
@@ -26,6 +26,7 @@ alias GL_DYNAMIC_DRAW = 0x88E8
 alias GL_UNSIGNED_INT = 0x1405
 alias GL_ELEMENT_ARRAY_BUFFER = 0x8893
 alias GL_TEXTURE0 = 0x84C0
+alias GL_WRITE_ONLY = 0x88B9
 
 
 fn gl_clear(mask: Int32):
@@ -228,14 +229,14 @@ fn gl_bind_texture(target: UInt32, texture: UInt32):
     )
 
 
-fn gl_tex_parameteri(target: Int32, pname: Int32, param: Int32):
-    _ = external_call["glTexParameteri", NoneType, Int32, Int32, Int32](
+fn gl_tex_parameteri(target: UInt32, pname: Int32, param: Int32):
+    _ = external_call["glTexParameteri", NoneType, UInt32, Int32, Int32](
         target, pname, param
     )
 
 
 fn gl_tex_image_2d(
-    target: Int32,
+    target: UInt32,
     level: Int32,
     internal_format: Int32,
     width: Int32,
@@ -248,7 +249,7 @@ fn gl_tex_image_2d(
     _ = external_call[
         "glTexImage2D",
         NoneType,
-        Int32,
+        UInt32,
         Int32,
         Int32,
         Int32,
@@ -313,3 +314,39 @@ fn gl_get_uniform_location(program: UInt32, name: UnsafePointer[Int8]) -> Int32:
 
 fn gl_uniform1i(location: Int32, v0: Int32):
     _ = external_call["glUniform1i", NoneType, Int32, Int32](location, v0)
+
+
+fn gl_map_buffer(target: Int32, access: Int32) -> OpaquePointer:
+    return external_call["glMapBuffer", OpaquePointer, Int32, Int32](
+        target, access
+    )
+
+
+fn gl_unmap_buffer(target: Int32) -> Bool:
+    return external_call["glUnmapBuffer", Bool, Int32](target)
+
+
+fn gl_tex_sub_image_2d(
+    target: UInt32,
+    level: Int32,
+    xoffset: Int32,
+    yoffset: Int32,
+    width: Int32,
+    height: Int32,
+    format: Int32,
+    type: Int32,
+    pixels: OpaquePointer,
+):
+    _ = external_call[
+        "glTexSubImage2D",
+        NoneType,
+        UInt32,
+        Int32,
+        Int32,
+        Int32,
+        Int32,
+        Int32,
+        Int32,
+        Int32,
+        OpaquePointer,
+    ](target, level, xoffset, yoffset, width, height, format, type, pixels)
