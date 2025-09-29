@@ -1,5 +1,4 @@
 from gl import *
-
 from glfw import *
 from glad import *
 from gpu_texture import GPUTexture
@@ -190,7 +189,6 @@ struct App:
         )
         gl_enable_vertex_attrib_array(1)
 
-        # Set texture uniform
         gl_use_program(self.shader_program)
 
         var tex_string = "ourTexture"
