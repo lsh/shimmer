@@ -23,12 +23,11 @@ fn kernel(ptr: UnsafePointer[UInt32], time: Float32):
     var u = Float32(x) / 640.0
     var v = Float32(y) / 480.0
 
-    var r = UInt32(u * 255.0)
-    var g = UInt32(v * 255.0)
-    var b = UInt32(255)
-    var a = UInt32(255)
-
-    ptr[idx] = (a << 24) | (r << 16) | (g << 8) | b
+    var r = UInt8(u * 255.0)
+    var g = UInt8(v * 255.0)
+    var b = UInt8(255)
+    var a = UInt8(255)
+    ptr.bitcast[SIMD[DType.uint8, 4]]()[idx] = {b, g, r, a}
 
 
 fn compile_shader(type: UInt32, mut source: String) raises -> UInt32:
