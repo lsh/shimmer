@@ -1,6 +1,7 @@
 from gl import *
 
 from gpu.host import DeviceContext, DeviceBuffer
+from memory import memcpy
 from sys.info import size_of
 
 
@@ -60,8 +61,7 @@ struct GPUTexture:
             if pbo_ptr:
                 var src = mapped.unsafe_ptr().bitcast[UInt8]()
                 var dst = pbo_ptr.bitcast[UInt8]()
-                for i in range(self.width * self.height * 4):
-                    dst[i] = src[i]
+                memcpy(dst, src, self.width * self.height * 4)
                 _ = gl_unmap_buffer(GL_PIXEL_UNPACK_BUFFER)
 
             gl_bind_texture(self.gl_texture_target, self.gl_texture)
