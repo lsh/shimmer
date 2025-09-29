@@ -1,17 +1,84 @@
 from gl import *
-from glfw import *
 from glad import *
+from glfw import *
 from gpu_texture import GPUTexture
+from vec import *
 
 from gpu.host import DeviceContext
 from gpu import global_idx
-from math import ceildiv
+from math import ceildiv, cos, sin
 from sys.info import size_of
 from sys.intrinsics import llvm_intrinsic
 from sys.ffi import external_call
 
 alias width = 640
 alias height = 480
+
+
+@always_inline
+fn calc_normal[
+    df: fn (var Vec3, Float32) -> Float32, eps: Float32 = 0.005
+](p: Vec3, time: Float32) -> Vec3:
+    return Vec3(
+        df(p + Vec3(eps, 0.0, 0.0), time) - df(p - Vec3(eps, 0.0, 0.0), time),
+        df(p + Vec3(0.0, eps, 0.0), time) - df(p - Vec3(0.0, eps, 0.0), time),
+        df(p + Vec3(0.0, 0.0, eps), time) - df(p - Vec3(0.0, 0.0, eps), time),
+    ).normalize()
+
+
+@always_inline
+fn map(var p: Vec3, time: Float32) -> Float32:
+    var q = (p % 2.0) - 1.0
+    return q.length() - 0.4
+
+
+@always_inline
+fn trace[
+    df: fn (var Vec3, Float32) -> Float32,
+    far: Float32 = 20.0,
+    eps: Float32 = 0.001,
+](ro: Vec3, rd: Vec3, time: Float32) -> Float32:
+    var t = Float32(0)
+    for _ in range(200):
+        var p = ro + rd * t
+        var m = map(p, time)
+        t += m * 0.9
+        if t > far or m < eps:
+            break
+    return t
+
+
+@always_inline
+fn calc_cam(uv: Vec2, ro: Vec3, rd: Vec3, fov: Float32) -> Vec3:
+    var cu = Vec3(0.0, 1.0, 0.0).normalize()
+    var z = (cu - ro).normalize()
+    var x = cu.cross(z).normalize()
+    var y = z.cross(x)
+    return (z + fov * uv.x * x + fov * uv.y * y).normalize()
+
+
+@always_inline
+fn main_image(uv: Vec2, time: Float32) -> Vec3:
+    var q = uv * 2.0 - 1.0
+    (UnsafePointer(to=q).bitcast[Float32]())[] *= Float32(width) / Float32(
+        height
+    )
+    var ro = Vec3(0.0, 0.0, time + 5.0)
+    var cv = ro + Vec3(0.0, 0.0, 4.0)
+    var rd = calc_cam(q, ro, cv, 0.4)
+    var t = trace[map](ro, rd, time)
+    var p = ro + rd * t
+    var n = calc_normal[map](p, time)
+    if t > 20.0:
+        return Vec3(0.0, 0.0, 0.0)
+    alias lp = Vec3(0.0, 0.5, 0.0)
+    var ld = (lp - p).normalize()
+    var diff = n.dot(ld) * 0.5 + 0.5
+    diff *= diff
+    var color = Vec3(diff, diff, diff)
+
+    return color
+    # return {uv.x, uv.y, sin(time) * 0.5 + 0.5}
 
 
 fn kernel(ptr: UnsafePointer[UInt32], time: Float32):
@@ -22,12 +89,12 @@ fn kernel(ptr: UnsafePointer[UInt32], time: Float32):
     var x = idx % width
     var y = idx // width
 
-    var u = Float32(x) / width
-    var v = Float32(y) / height
+    var uv = Vec2(Float32(x) / width, Float32(y) / height)
+    var col = main_image(uv, time)
 
-    var r = UInt8(u * 255.0)
-    var g = UInt8(v * 255.0)
-    var b = UInt8(255)
+    var r = UInt8(col.x * 255.0)
+    var g = UInt8(col.y * 255.0)
+    var b = UInt8(col.z * 255.0)
     var a = UInt8(255)
     ptr.bitcast[SIMD[DType.uint8, 4]]()[idx] = {b, g, r, a}
 
@@ -183,7 +250,9 @@ struct App:
         )
         gl_enable_vertex_attrib_array(0)
 
-        var ptr = OpaquePointer() + 3 * size_of[Float32]()
+        # Create offset as an integer and cast to pointer
+        var offset = 3 * size_of[Float32]()
+        var ptr = UnsafePointer(to=offset).bitcast[OpaquePointer]()[]
         gl_vertex_attrib_pointer(
             1, 2, GL_FLOAT, GL_FALSE, 5 * size_of[Float32](), ptr
         )
