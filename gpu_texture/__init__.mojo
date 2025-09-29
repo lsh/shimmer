@@ -56,9 +56,7 @@ struct GPUTexture:
     ](mut self, buffer: DeviceBuffer[dtype], ctx: DeviceContext) raises:
         with buffer.map_to_host() as mapped:
             gl_bind_buffer(GL_PIXEL_UNPACK_BUFFER, self._pbo)
-            var pbo_ptr = gl_map_buffer(
-                GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY
-            )
+            var pbo_ptr = gl_map_buffer(GL_PIXEL_UNPACK_BUFFER, GL_WRITE_ONLY)
             if pbo_ptr:
                 var src = mapped.unsafe_ptr().bitcast[UInt8]()
                 var dst = pbo_ptr.bitcast[UInt8]()
