@@ -461,9 +461,9 @@ fn CVPixelBufferGetIOSurface(pixelBuffer: CVPixelBufferRef) -> OpaquePointer:
 struct AAPLOpenGLMetalInteropTexture:
     var metal_device: OpaquePointer
     var metal_texture: OpaquePointer
-    var open_gl_context: UnsafePointer[PlatformGLContext]
-    var open_gl_texture: UInt32
-    var open_gl_texture_target: UInt32
+    var gl_context: UnsafePointer[PlatformGLContext]
+    var gl_texture: UInt32
+    var gl_texture_target: UInt32
     var size: CGSize
 
     var _format_info: Optional[AAPLTextureFormatInfo]
@@ -473,10 +473,7 @@ struct AAPLOpenGLMetalInteropTexture:
     var _cvgl_texture_cache: CVOpenGLTextureCacheRef
     var _cvgl_texture: CVOpenGLTextureRef
     var _cgl_pixel_format: CGLPixelFormatObj
-
     var _cvmtl_texture_cache: CVMetalTextureCacheRef
-    var _cf: DLHandle
-    var _cv: DLHandle
 
     fn __init__(
         out self,
@@ -486,35 +483,35 @@ struct AAPLOpenGLMetalInteropTexture:
         size: CGSize,
     ) raises:
         self.metal_device = mtl_device
-        self.open_gl_context = gl_context.bitcast[PlatformGLContext]()
-        self.open_gl_texture = 0
-        self.open_gl_texture_target = 0
+        self.gl_context = gl_context.bitcast[PlatformGLContext]()
+        self.gl_texture = 0
+        self.gl_texture_target = 0
         self.metal_texture = {}
         self._format_info = metal_pixel_format_to_texture_format_info(
             mtl_pixel_format
         )
 
         self.size = size
-        self._cgl_pixel_format = cgl_get_pixel_format(self.open_gl_context)
+        self._cgl_pixel_format = cgl_get_pixel_format(self.gl_context)
         self._cv_pixel_buffer = {}
         self._cv_mtl_texture = {}
         self._cvgl_texture_cache = {}
         self._cvgl_texture = {}
         self._cvmtl_texture_cache = {}
 
-        self._cf = DLHandle(
+        var cf = DLHandle(
             "/System/Library/Frameworks/CoreFoundation.framework/CoreFoundation",
             RTLD.LAZY | RTLD.GLOBAL,
         )
-        self._cv = DLHandle(
+        var cv = DLHandle(
             "/System/Library/Frameworks/CoreVideo.framework/CoreVideo",
             RTLD.LAZY | RTLD.GLOBAL,
         )
 
-        var kCFTypeDictionaryKeyCallBacks = self._cf.get_symbol[
+        var kCFTypeDictionaryKeyCallBacks = cf.get_symbol[
             CFDictionaryKeyCallBacks
         ]("kCFTypeDictionaryKeyCallBacks")
-        var kCFTypeDictionaryValueCallBacks = self._cf.get_symbol[
+        var kCFTypeDictionaryValueCallBacks = cf.get_symbol[
             CFDictionaryValueCallBacks
         ]("kCFTypeDictionaryValueCallBacks")
 
@@ -525,15 +522,15 @@ struct AAPLOpenGLMetalInteropTexture:
             kCFTypeDictionaryValueCallBacks,
         )
 
-        var true_value = self._cf.get_symbol[CFBooleanRef]("kCFBooleanTrue")[]
+        var true_value = cf.get_symbol[CFBooleanRef]("kCFBooleanTrue")[]
 
-        var k_cv_pixel_buffer_open_gl_compatibility_key = self._cv.get_symbol[
+        var k_cv_pixel_buffer_open_gl_compatibility_key = cv.get_symbol[
             CFStringRef
         ]("kCVPixelBufferOpenGLCompatibilityKey")[]
-        var k_cv_pixel_buffer_metal_compatibility_key = self._cv.get_symbol[
+        var k_cv_pixel_buffer_metal_compatibility_key = cv.get_symbol[
             CFStringRef
         ]("kCVPixelBufferMetalCompatibilityKey")[]
-        var k_cv_pixel_buffer_io_surface_properties_key = self._cv.get_symbol[
+        var k_cv_pixel_buffer_io_surface_properties_key = cv.get_symbol[
             CFStringRef
         ]("kCVPixelBufferIOSurfacePropertiesKey")[]
 
@@ -584,7 +581,7 @@ struct AAPLOpenGLMetalInteropTexture:
         var cvret = CVOpenGLTextureCacheCreate(
             kCFAllocatorDefault,
             CFDictionaryRef(),
-            self.open_gl_context,
+            self.gl_context,
             self._cgl_pixel_format,
             CFDictionaryRef(),
             UnsafePointer(to=self._cvgl_texture_cache),
@@ -602,16 +599,10 @@ struct AAPLOpenGLMetalInteropTexture:
 
         debug_assert(cvret == 0, "Failed to create OpenGL Texture From Image")
 
-        self.open_gl_texture = CVOpenGLTextureGetName(self._cvgl_texture)
-        self.open_gl_texture_target = CVOpenGLTextureGetTarget(
-            self._cvgl_texture
-        )
+        self.gl_texture = CVOpenGLTextureGetName(self._cvgl_texture)
+        self.gl_texture_target = CVOpenGLTextureGetTarget(self._cvgl_texture)
 
     fn create_metal_texture(mut self) raises:
-        # Validate Metal device
-        if not self.metal_device:
-            raise Error("Metal device is null!")
-
         var cvret = CVMetalTextureCacheCreate(
             kCFAllocatorDefault,
             CFDictionaryRef(),
@@ -630,7 +621,7 @@ struct AAPLOpenGLMetalInteropTexture:
             kCFAllocatorDefault,
             self._cvmtl_texture_cache,
             self._cv_pixel_buffer,
-            CFDictionaryRef(),  # null dictionary for now
+            CFDictionaryRef(),
             self._format_info[].mtl_format,
             width,
             height,
@@ -661,7 +652,7 @@ struct AAPLTextureFormatInfo(Copyable, Movable):
 
 # Table of equivalent formats across CoreVideo, Metal, and OpenGL
 alias AAPLInteropFormatTable = InlineArray[AAPLTextureFormatInfo, 4](
-    # Core Video Pixel Format,               Metal Pixel Format,            GL internalformat, GL format,   GL type
+    # Core Video Pixel Format,Metal Pixel Format, GL internalformat, GL format, GL type
     {
         kCVPixelFormatType_32BGRA,
         MTLPixelFormatBGRA8Unorm,
