@@ -2,7 +2,6 @@ from gl import *
 
 from glfw import *
 from glad import *
-from objc import *
 from gpu_texture import GPUTexture
 
 from gpu.host import DeviceContext
@@ -26,7 +25,7 @@ fn kernel(ptr: UnsafePointer[UInt32], time: Float32):
 
     var r = UInt32(u * 255.0)
     var g = UInt32(v * 255.0)
-    var b = UInt32(1)
+    var b = UInt32(255)
     var a = UInt32(255)
 
     ptr[idx] = (a << 24) | (r << 16) | (g << 8) | b
@@ -230,7 +229,7 @@ fn main() raises:
     _ = glad_load_gl_loader(glfw_get_proc_address)
 
     with DeviceContext() as ctx:
-        var tex = GPUTexture(width=640, height=480, window=window, ctx=ctx)
+        var tex = GPUTexture(width=640, height=480, ctx=ctx)
         init_opengl(
             vertex_shader_source,
             fragment_shader_source,
