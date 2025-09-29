@@ -1,21 +1,20 @@
 [workspace]
 authors = ["Lukas Hermann <1734032+lsh@users.noreply.github.com>"]
 channels = ["https://conda.modular.com/max-nightly", "conda-forge"]
-name = "metalgl"
+name = "shimmer"
 platforms = ["osx-arm64", "linux-64"]
 version = "0.1.0"
 
 [tasks]
 setup = { cmd = "mkdir -p build" }
-# compile-c = { cmd = "clang -c -shared mtl_texture_replace.m -o build/libmtl_texture_replace.dylib", depends-on = ["setup"] }
 build = { cmd = "mojo build main.mojo -o build/main", depends-on = ["setup"] }
 exec = { cmd = "./build/main", depends-on = ["build"] }
 
 [target.osx-arm64.activation]
-env = {MODULAR_MOJO_MAX_SYSTEM_LIBS="-lm,-L./build,-lmtl_texture_replace,-L.pixi/envs/default/lib/,-lglfw,-lglad,-framework,OpenGL,-framework,CoreVideo,-framework,CoreFoundation,-framework,Metal"}
+env = {MODULAR_MOJO_MAX_SYSTEM_LIBS="-lm,-L.pixi/envs/default/lib/,-lglfw,-lglad,-framework,OpenGL"}
 
 [target.linux-64.activation]
-env = {MODULAR_MOJO_MAX_SYSTEM_LIBS="-lrt,-ldl,-lpthread,-lm,-L/opt/cuda/lib/,-L.pixi/envs/default/lib/,-L/usr/lib/,-lGL,-lEGL,-lcudart,-lglfw,-lglad"}
+env = {MODULAR_MOJO_MAX_SYSTEM_LIBS="-lrt,-ldl,-lpthread,-lm,-L/opt/cuda/lib/,-L.pixi/envs/default/lib/,-L/usr/lib/,-lGL,-lEGL,--lglfw,-lglad"}
 
 [dependencies]
 max = ">=25.7.0.dev2025092305,<26"
