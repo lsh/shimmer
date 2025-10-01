@@ -131,6 +131,10 @@ struct Vec3(Copyable, Movable):
         return Self(self._value + rhs)
 
     @always_inline
+    fn __rsub__(self, rhs: Float32) -> Vec3:
+        return Self(self._value - rhs)
+
+    @always_inline
     fn __rmul__(self, rhs: Float32) -> Vec3:
         return Self(self._value * rhs)
 
@@ -141,6 +145,14 @@ struct Vec3(Copyable, Movable):
     @always_inline
     fn __rtruediv__(self, rhs: Float32) -> Vec3:
         return Self(rhs / self._value)
+
+    @always_inline
+    fn clamp(self, min_val: Float32, max_val: Float32) -> Vec3:
+        return Vec3(
+            math.clamp(self.x, min_val, max_val),
+            math.clamp(self.y, min_val, max_val),
+            math.clamp(self.z, min_val, max_val),
+        )
 
     @always_inline
     fn dot(self, rhs: Self) -> Float32:
