@@ -61,7 +61,7 @@ struct GPUTexture:
             if pbo_ptr:
                 var src = mapped.unsafe_ptr().bitcast[UInt8]()
                 var dst = pbo_ptr.bitcast[UInt8]()
-                memcpy(dst, src, self.width * self.height * 4)
+                memcpy(dest=dst, src=src, count=self.width * self.height * 4)
                 _ = gl_unmap_buffer(GL_PIXEL_UNPACK_BUFFER)
 
             gl_bind_texture(self.gl_texture_target, self.gl_texture)

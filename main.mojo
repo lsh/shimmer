@@ -27,9 +27,19 @@ fn calc_normal[
 
 
 @always_inline
+fn rot2d(p: Vec2, a: Float32) -> Vec2:
+    var c = cos(a)
+    var s = sin(a)
+    return {p.x * c - p.y * s, p.x * s + p.y * c}
+
+
+@always_inline
 fn map(var p: Vec3, time: Float32) -> Float32:
-    var q = (p % 2.0) - 1.0
-    return q.length() - 0.4
+    var q = p
+    var p2 = rot2d({p.x, p.y}, q.z * 0.1 + time * 0.1)
+    p = Vec3(p2.x, p2.y, p.z)
+    p = (p % 2.0) - 1.0
+    return p.length() - 0.4
 
 
 @always_inline
@@ -39,10 +49,10 @@ fn trace[
     eps: Float32 = 0.001,
 ](ro: Vec3, rd: Vec3, time: Float32) -> Float32:
     var t = Float32(0)
-    for _ in range(200):
+    for _ in range(250):
         var p = ro + rd * t
         var m = map(p, time)
-        t += m * 0.9
+        t += m * 0.75
         if t > far or m < eps:
             break
     return t
