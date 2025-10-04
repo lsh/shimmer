@@ -13,6 +13,24 @@ from sys.ffi import external_call
 
 alias width = 640
 alias height = 480
+alias far = 20.0
+
+
+fn smoothstep(edge0: Float32, edge1: Float32, x: Float32) -> Float32:
+    var t = ((x - edge0) / (edge1 - edge0)).clamp(0.0, 1.0)
+    return t * t * (3.0 - 2.0 * t)
+
+
+fn mix(x: Float32, y: Float32, a: Float32) -> Float32:
+    return x * (1.0 - a) + y * a
+
+
+fn mix(x: Vec3, y: Vec3, a: Float32) -> Vec3:
+    return {
+        mix(x.x, y.x, a),
+        mix(x.y, y.y, a),
+        mix(x.z, y.z, a),
+    }
 
 
 @always_inline
@@ -27,9 +45,19 @@ fn calc_normal[
 
 
 @always_inline
+fn rot2d(p: Vec2, a: Float32) -> Vec2:
+    var c = cos(a)
+    var s = sin(a)
+    return {p.x * c - p.y * s, p.x * s + p.y * c}
+
+
+@always_inline
 fn map(var p: Vec3, time: Float32) -> Float32:
-    var q = (p % 2.0) - 1.0
-    return q.length() - 0.4
+    var q = p
+    var p2 = rot2d({p.x, p.y}, q.z * 0.1 + time * 0.1)
+    p = Vec3(p2.x, p2.y, p.z)
+    p = (p % 2.0) - 1.0
+    return p.length() - 0.4
 
 
 @always_inline
@@ -39,10 +67,10 @@ fn trace[
     eps: Float32 = 0.001,
 ](ro: Vec3, rd: Vec3, time: Float32) -> Float32:
     var t = Float32(0)
-    for _ in range(200):
+    for _ in range(250):
         var p = ro + rd * t
         var m = map(p, time)
-        t += m * 0.9
+        t += m * 0.75
         if t > far or m < eps:
             break
     return t
@@ -66,16 +94,17 @@ fn main_image(uv: Vec2, time: Float32) -> Vec3:
     var ro = Vec3(0.0, 0.0, time + 5.0)
     var cv = ro + Vec3(0.0, 0.0, 4.0)
     var rd = calc_cam(q, ro, cv, 0.4)
-    var t = trace[map](ro, rd, time)
+    var t = trace[map, far=far](ro, rd, time)
     var p = ro + rd * t
     var n = calc_normal[map](p, time)
-    if t > 20.0:
+    if t > far:
         return Vec3(0.0, 0.0, 0.0)
     alias lp = Vec3(0.0, 0.5, 0.0)
     var ld = (lp - p).normalize()
     var diff = n.dot(ld) * 0.5 + 0.5
     diff *= diff
     var color = Vec3(diff, diff, diff)
+    color = mix(color, Vec3(0.0, 0.0, 0.0), t / far)
 
     return color
     # return {uv.x, uv.y, sin(time) * 0.5 + 0.5}
