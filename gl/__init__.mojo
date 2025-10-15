@@ -29,6 +29,16 @@ alias GL_TEXTURE0 = 0x84C0
 alias GL_WRITE_ONLY = 0x88B9
 
 
+fn gl_viewport(x: Int32, y: Int32, width: Int64, height: Int64):
+    _ = external_call["glViewport", NoneType, Int32, Int32, Int64, Int64](
+        x, y, width, height
+    )
+
+
+fn gl_uniform2f(location: Int32, v0: Float32, v1: Float32):
+    _ = external_call["glUniform2f", NoneType, Float32, Float32](v0, v1)
+
+
 fn gl_clear(mask: Int32):
     _ = external_call["glClear", NoneType, Int32](mask)
 
@@ -37,10 +47,12 @@ fn gl_create_shader(shader_type: UInt32) -> UInt32:
     return external_call["glCreateShader", UInt32, UInt32](shader_type)
 
 
-fn gl_shader_source(
+fn gl_shader_source[
+    mut: Bool, origin: Origin[mut], //
+](
     shader: UInt32,
     count: Int32,
-    string: UnsafePointer[UnsafePointer[Int8]],
+    string: UnsafePointer[UnsafePointer[Int8, mut=mut, origin=origin]],
     length: UnsafePointer[Int32, address_space = AddressSpace.GENERIC, **_],
 ):
     _ = external_call[
@@ -48,7 +60,7 @@ fn gl_shader_source(
         NoneType,
         UInt32,
         Int32,
-        UnsafePointer[UnsafePointer[Int8]],
+        UnsafePointer[UnsafePointer[Int8, mut=mut, origin=origin]],
         UnsafePointer[Int32],
     ](shader, count, string, length)
 
