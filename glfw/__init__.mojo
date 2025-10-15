@@ -8,6 +8,7 @@ alias GLFW_OPENGL_CORE_PROFILE = 0x00032001
 alias GLFW_COLOR_BUFFER_BIT = 0x00004000
 alias GLFW_ESCAPE = 256
 alias GLFW_KEY_ESCAPE = GLFW_ESCAPE
+alias GLFW_KEY_R = 82
 alias GLFW_PRESS = 1
 alias GLFW_RELEASE = 0
 alias GLFW_TRUE = 1
@@ -15,6 +16,20 @@ alias GLFW_TRUE = 1
 
 struct GLFWwindow:
     pass
+
+
+fn glfw_get_framebuffer_size(
+    window: UnsafePointer[GLFWwindow],
+    width: UnsafePointer[Int32],
+    height: UnsafePointer[Int32],
+):
+    _ = external_call[
+        "glfwGetFramebufferSize",
+        NoneType,
+        UnsafePointer[GLFWwindow],
+        UnsafePointer[Int32],
+        UnsafePointer[Int32],
+    ](window, width, height)
 
 
 fn glfw_init() raises:

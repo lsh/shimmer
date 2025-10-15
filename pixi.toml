@@ -7,8 +7,9 @@ version = "0.1.0"
 
 [tasks]
 setup = { cmd = "mkdir -p build" }
-build = { cmd = "mojo build main.mojo -o build/main", depends-on = ["setup"] }
-exec = { cmd = "./build/main", depends-on = ["build"] }
+build-shader = { cmd = "mojo build --emit=shared-lib shader.mojo", depends-on = ["setup"] }
+build = { cmd = "mojo build main.mojo -o build/main", depends-on = ["setup", "build-shader"] }
+exec = { cmd = "./build/main", depends-on = ["build", "build-shader"] }
 
 [target.osx-arm64.activation]
 env = {MODULAR_MOJO_MAX_SYSTEM_LIBS="-lm,-L.pixi/envs/default/lib/,-lglfw,-lglad,-framework,OpenGL"}

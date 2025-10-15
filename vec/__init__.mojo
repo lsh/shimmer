@@ -1,11 +1,24 @@
 import math
 import builtin
+from builtin.device_passable import DevicePassable
 
 
 @fieldwise_init
 @register_passable("trivial")
-struct Vec3(Copyable, Movable):
+struct Vec3(Copyable, Movable, DevicePassable):
     var _value: SIMD[DType.float32, 4]
+
+    alias device_type: AnyTrivialRegType = Self
+    fn _to_device_type(self, target: OpaquePointer):
+        target.bitcast[Self.device_type]()[] = self
+
+    @staticmethod
+    fn get_type_name() -> String:
+        return "Vec3"
+
+    @staticmethod
+    fn get_device_type_name() -> String:
+        return "Vec3"
 
     @always_inline
     fn __init__(out self):
@@ -227,8 +240,20 @@ struct Vec3(Copyable, Movable):
 
 @fieldwise_init
 @register_passable("trivial")
-struct Vec2(Copyable, Movable):
+struct Vec2(Copyable, Movable, DevicePassable):
     var _value: SIMD[DType.float32, 2]
+
+    alias device_type: AnyTrivialRegType = Self
+    fn _to_device_type(self, target: OpaquePointer):
+        target.bitcast[Self.device_type]()[] = self
+
+    @staticmethod
+    fn get_type_name() -> String:
+        return "Vec2"
+
+    @staticmethod
+    fn get_device_type_name() -> String:
+        return "Vec2"
 
     @always_inline
     fn __init__(out self):
@@ -421,8 +446,21 @@ struct Vec2(Copyable, Movable):
 
 @fieldwise_init
 @register_passable("trivial")
-struct Vec4(Copyable, Movable):
+struct Vec4(Copyable, Movable, DevicePassable):
     var _value: SIMD[DType.float32, 4]
+
+    alias device_type: AnyTrivialRegType = Self
+    fn _to_device_type(self, target: OpaquePointer):
+        target.bitcast[Self.device_type]()[] = self
+
+    @staticmethod
+    fn get_type_name() -> String:
+        return "Vec4"
+
+    @staticmethod
+    fn get_device_type_name() -> String:
+        return "Vec4"
+
 
     @always_inline
     fn __init__(out self):
