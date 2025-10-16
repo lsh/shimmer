@@ -96,7 +96,7 @@ fn main_image[
     var diff = n.dot(ld) * 0.5 + 0.5
     diff *= diff
     var color = Vec3(diff, diff, diff)
-    color = mix(color, Vec3(0.0, 1.0, 0.0), t / far)
+    color = mix(color, Vec3(0.0, 0.0, 0.0), t / far)
 
     return color
     # return {uv.x, uv.y, sin(time) * 0.5 + 0.5}
@@ -130,7 +130,7 @@ fn run_shader(
     ctx: DeviceContext,
 ):
     try:
-        ctx.enqueue_function_checked[kernel, kernel](
+        ctx.enqueue_function_experimental[kernel](
             buffer,
             uniforms.width,
             uniforms.height,
