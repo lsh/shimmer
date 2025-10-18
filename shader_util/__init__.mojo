@@ -1,4 +1,5 @@
 from builtin.device_passable import DevicePassable
+from vec import *
 
 
 @fieldwise_init
@@ -7,6 +8,7 @@ struct Uniforms(Copyable, DevicePassable, ImplicitlyCopyable, Movable):
     var width: Int
     var height: Int
     var time: Float32
+    var audio: Vec3
 
     alias device_type: AnyTrivialRegType = Self
 

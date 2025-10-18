@@ -23,6 +23,12 @@ fn mix(x: Vec3, y: Vec3, a: Float32) -> Vec3:
     }
 
 
+fn palette(t: Float32, a: Vec3, b: Vec3, c: Vec3, d: Vec3) -> Vec3:
+    return a + b * (
+        Vec3(1.0, 1.0, 1.0) * (2.0 * 3.14159265 * (c * t + d)).cos()
+    )
+
+
 @always_inline
 fn calc_normal[
     df: fn (var Vec3, Float32) -> Float32, eps: Float32 = 0.005
@@ -43,11 +49,12 @@ fn rot2d(p: Vec2, a: Float32) -> Vec2:
 
 @always_inline
 fn map(var p: Vec3, time: Float32) -> Float32:
-    var q = p
-    var p2 = rot2d({p.x, p.y}, q.z * 0.1 + time * 0.1)
-    p = Vec3(p2.x, p2.y, p.z)
-    p = (p % 2.0) - 1.0
-    return p.length() - 0.4
+    # var r = rot2d({p.z, p.y}, time)
+    # p = Vec3(p.x, r.y, r.x)
+    # r = rot2d({p.x, p.z}, time * 0.5)
+    # p = Vec3(r.x, p.y, r.y)
+
+    return (p.abs() + p.abs().sin() + time).cos().length() - 0.5
 
 
 @always_inline
@@ -84,6 +91,11 @@ fn main_image[
         height
     )
     var ro = Vec3(0.0, 0.0, time + 5.0)
+    r = rot2d({ro.x, ro.z}, time * 0.1)
+    ro = Vec3(r.x, ro.y, r.y)
+    r = rot2d({ro.y, ro.z}, time * 0.1)
+    ro = Vec3(ro.x, r.x, r.y)
+
     var cv = ro + Vec3(0.0, 0.0, 4.0)
     var rd = calc_cam(q, ro, cv, 0.4)
     var t = trace[map, far=far](ro, rd, time)
@@ -95,7 +107,13 @@ fn main_image[
     var ld = (lp - p).normalize()
     var diff = n.dot(ld) * 0.5 + 0.5
     diff *= diff
-    var color = Vec3(diff, diff, diff)
+    var color = palette(
+        diff,
+        Vec3(0.5, 0.5, 0.5),
+        Vec3(0.5, 0.5, 0.5),
+        Vec3(1.0, 1.0, 1.0),
+        Vec3(0.00, 0.10, 0.20),
+    )
     color = mix(color, Vec3(0.0, 0.0, 0.0), t / far)
 
     return color
