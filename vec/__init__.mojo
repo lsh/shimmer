@@ -8,7 +8,7 @@ from builtin.device_passable import DevicePassable
 struct Vec3(Copyable, DevicePassable, Movable, Writable):
     var _value: SIMD[DType.float32, 4]
 
-    alias device_type: AnyTrivialRegType = Self
+    alias device_type: AnyType = Self
 
     fn _to_device_type(self, target: OpaquePointer):
         target.bitcast[Self.device_type]()[] = self
@@ -263,7 +263,7 @@ struct Vec3(Copyable, DevicePassable, Movable, Writable):
 struct Vec2(Copyable, DevicePassable, Movable):
     var _value: SIMD[DType.float32, 2]
 
-    alias device_type: AnyTrivialRegType = Self
+    alias device_type: AnyType = Self
 
     fn _to_device_type(self, target: OpaquePointer):
         target.bitcast[Self.device_type]()[] = self
@@ -474,7 +474,7 @@ struct Vec2(Copyable, DevicePassable, Movable):
 struct Vec4(Copyable, DevicePassable, Movable):
     var _value: SIMD[DType.float32, 4]
 
-    alias device_type: AnyTrivialRegType = Self
+    alias device_type: AnyType = Self
 
     fn _to_device_type(self, target: OpaquePointer):
         target.bitcast[Self.device_type]()[] = self

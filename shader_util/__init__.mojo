@@ -10,7 +10,7 @@ struct Uniforms(Copyable, DevicePassable, ImplicitlyCopyable, Movable):
     var time: Float32
     var audio: Vec3
 
-    alias device_type: AnyTrivialRegType = Self
+    alias device_type: AnyType = Self
 
     fn _to_device_type(self, target: OpaquePointer):
         target.bitcast[Self.device_type]()[] = self
