@@ -462,12 +462,7 @@ struct App:
                 gl_active_texture(GL_TEXTURE0)
                 gl_bind_texture(GL_TEXTURE_RECTANGLE, tex.gl_texture)
                 gl_bind_vertex_array(self.vao)
-                gl_draw_elements(
-                    GL_TRIANGLES,
-                    6,
-                    GL_UNSIGNED_INT,
-                    {},
-                )
+                gl_draw_elements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, {})
 
                 self.animation_time += 0.01
                 glfw_swap_buffers(self.window)
