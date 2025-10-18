@@ -5,10 +5,11 @@ from builtin.device_passable import DevicePassable
 
 @fieldwise_init
 @register_passable("trivial")
-struct Vec3(Copyable, Movable, DevicePassable):
+struct Vec3(Copyable, DevicePassable, Movable, Writable):
     var _value: SIMD[DType.float32, 4]
 
-    alias device_type: AnyTrivialRegType = Self
+    alias device_type: AnyType = Self
+
     fn _to_device_type(self, target: OpaquePointer):
         target.bitcast[Self.device_type]()[] = self
 
@@ -160,6 +161,10 @@ struct Vec3(Copyable, Movable, DevicePassable):
         return Self(rhs / self._value)
 
     @always_inline
+    fn abs(self) -> Vec3:
+        return Self(abs(self.x), abs(self.y), abs(self.z))
+
+    @always_inline
     fn clamp(self, min_val: Float32, max_val: Float32) -> Vec3:
         return Vec3(
             math.clamp(self.x, min_val, max_val),
@@ -237,13 +242,29 @@ struct Vec3(Copyable, Movable, DevicePassable):
         var sqrtk = math.sqrt(max(k, 0.0))
         return etai_over_etat * (self - n * dt) - n * sqrtk
 
+    fn floor(self) -> Self:
+        return Vec3(math.floor(self.x), math.floor(self.y), math.floor(self.z))
+
+    fn fract(self) -> Self:
+        return self - self.floor()
+
+    fn write_to(self, mut w: Some[Writer]):
+        w.write("Vec3(")
+        w.write(self.x)
+        w.write(", ")
+        w.write(self.y)
+        w.write(", ")
+        w.write(self.z)
+        w.write(")")
+
 
 @fieldwise_init
 @register_passable("trivial")
-struct Vec2(Copyable, Movable, DevicePassable):
+struct Vec2(Copyable, DevicePassable, Movable):
     var _value: SIMD[DType.float32, 2]
 
-    alias device_type: AnyTrivialRegType = Self
+    alias device_type: AnyType = Self
+
     fn _to_device_type(self, target: OpaquePointer):
         target.bitcast[Self.device_type]()[] = self
 
@@ -382,6 +403,10 @@ struct Vec2(Copyable, Movable, DevicePassable):
         return Self(rhs / self._value)
 
     @always_inline
+    fn abs(self) -> Vec2:
+        return Self(abs(self.x), abs(self.y))
+
+    @always_inline
     fn dot(self, rhs: Self) -> Float32:
         return (self.x * rhs.x) + (self.y * rhs.y)
 
@@ -446,10 +471,11 @@ struct Vec2(Copyable, Movable, DevicePassable):
 
 @fieldwise_init
 @register_passable("trivial")
-struct Vec4(Copyable, Movable, DevicePassable):
+struct Vec4(Copyable, DevicePassable, Movable):
     var _value: SIMD[DType.float32, 4]
 
-    alias device_type: AnyTrivialRegType = Self
+    alias device_type: AnyType = Self
+
     fn _to_device_type(self, target: OpaquePointer):
         target.bitcast[Self.device_type]()[] = self
 
@@ -460,7 +486,6 @@ struct Vec4(Copyable, Movable, DevicePassable):
     @staticmethod
     fn get_device_type_name() -> String:
         return "Vec4"
-
 
     @always_inline
     fn __init__(out self):
@@ -659,3 +684,7 @@ struct Vec4(Copyable, Movable, DevicePassable):
         var k = 1.0 - etai_over_etat * etai_over_etat * (1.0 - dt * dt)
         var sqrtk = math.sqrt(max(k, 0.0))
         return etai_over_etat * (self - n * dt) - n * sqrtk
+
+    @always_inline
+    fn abs(self) -> Vec4:
+        return Self(abs(self.x), abs(self.y), abs(self.z), abs(self.w))

@@ -2,8 +2,10 @@ from gl import *
 from glad import *
 from glfw import *
 from gpu_texture import GPUTexture
-from vec import *
+from kissfft import KissFFTState
+from portaudio import *
 from shader_util import Uniforms
+from vec import *
 
 from gpu.host import DeviceContext, DeviceBuffer
 from gpu import global_idx
@@ -12,6 +14,158 @@ from sys.info import size_of
 from sys.intrinsics import llvm_intrinsic
 from sys.ffi import DLHandle, external_call
 from time import sleep, perf_counter
+from complex import ComplexScalar
+from math import sqrt
+
+
+struct AudioAnalyzer:
+    """Captures microphone input and analyzes frequency content."""
+
+    var stream: UnsafePointer[PaStream]
+    var fft_state: KissFFTState[DType.float32]
+    var buffer: List[Float32]
+    var fft_input: List[ComplexScalar[DType.float32]]
+    var fft_output: List[ComplexScalar[DType.float32]]
+    var sample_rate: Float64
+    var fft_size: Int
+    var low_freq: Float32
+    var mid_freq: Float32
+    var high_freq: Float32
+
+    fn __init__(
+        out self, sample_rate: Float64 = 44100.0, fft_size: Int = 1024
+    ) raises:
+        """Initialize audio capture and FFT."""
+        self.sample_rate = sample_rate
+        self.fft_size = fft_size
+        self.low_freq = 0.0
+        self.mid_freq = 0.0
+        self.high_freq = 0.0
+
+        # Initialize PortAudio
+        var err = Pa_Initialize()
+        if err != paNoError:
+            raise Error("Failed to initialize PortAudio")
+
+        # Create buffers
+        self.buffer = List[Float32](capacity=fft_size)
+        self.buffer.resize(fft_size, 0.0)
+
+        self.fft_input = List[ComplexScalar[DType.float32]](capacity=fft_size)
+        self.fft_input.resize(fft_size, ComplexScalar[DType.float32](0.0, 0.0))
+
+        self.fft_output = List[ComplexScalar[DType.float32]](capacity=fft_size)
+        self.fft_output.resize(fft_size, ComplexScalar[DType.float32](0.0, 0.0))
+
+        # Initialize FFT
+        self.fft_state = KissFFTState[DType.float32](fft_size, inverse=False)
+
+        # Open input stream - PortAudio will allocate the stream
+        var stream_ptr = InlineArray[UnsafePointer[PaStream], 1](
+            uninitialized=True
+        )
+
+        err = Pa_OpenDefaultStream(
+            stream_ptr.unsafe_ptr(),
+            1,  # input channels
+            0,  # output channels
+            paFloat32,
+            sample_rate,
+            UInt(fft_size),
+            UnsafePointer[NoneType](),  # no callback
+            UnsafePointer[NoneType](),  # no user data
+        )
+
+        if err != paNoError:
+            raise Error("Failed to open audio stream")
+
+        # PortAudio has allocated the stream, we just store the pointer
+        self.stream = stream_ptr[0]
+
+        # Start the stream
+        err = Pa_StartStream(self.stream)
+        if err != paNoError:
+            raise Error("Failed to start audio stream")
+
+    fn __del__(deinit self):
+        """Clean up audio resources."""
+        _ = Pa_StopStream(self.stream)
+        _ = Pa_CloseStream(self.stream)
+        _ = Pa_Terminate()
+
+    fn update(mut self) raises:
+        """Capture audio and update frequency bands."""
+        # Read audio samples
+        var err = Pa_ReadStream(
+            self.stream,
+            self.buffer.unsafe_ptr().bitcast[NoneType](),
+            UInt(self.fft_size),
+        )
+
+        if err != paNoError and err != paInputOverflowed:
+            # Input overflow is acceptable, other errors are not
+            return
+
+        # Convert to complex for FFT
+        for i in range(self.fft_size):
+            self.fft_input[i] = ComplexScalar[DType.float32](
+                self.buffer[i], 0.0
+            )
+
+        # Perform FFT
+        self.fft_state.transform(Span(self.fft_input), Span(self.fft_output), 1)
+
+        # Calculate frequency band energies
+        # Low: 20-250 Hz, Mid: 250-2000 Hz, High: 2000-20000 Hz
+        var bin_freq = self.sample_rate / Float64(self.fft_size)
+        var low_start = Int(20.0 / bin_freq)
+        var low_end = Int(250.0 / bin_freq)
+        var mid_end = Int(2000.0 / bin_freq)
+        var high_end = Int(20000.0 / bin_freq)
+
+        if high_end > self.fft_size // 2:
+            high_end = self.fft_size // 2
+
+        var low_energy = Float32(0.0)
+        var mid_energy = Float32(0.0)
+        var high_energy = Float32(0.0)
+
+        # Sum magnitudes in each band
+        for i in range(low_start, low_end):
+            var mag = sqrt(
+                self.fft_output[i].re * self.fft_output[i].re
+                + self.fft_output[i].im * self.fft_output[i].im
+            )
+            low_energy += mag
+
+        for i in range(low_end, mid_end):
+            var mag = sqrt(
+                self.fft_output[i].re * self.fft_output[i].re
+                + self.fft_output[i].im * self.fft_output[i].im
+            )
+            mid_energy += mag
+
+        for i in range(mid_end, high_end):
+            var mag = sqrt(
+                self.fft_output[i].re * self.fft_output[i].re
+                + self.fft_output[i].im * self.fft_output[i].im
+            )
+            high_energy += mag
+
+        # Normalize by number of bins
+        var low_count = low_end - low_start
+        var mid_count = mid_end - low_end
+        var high_count = high_end - mid_end
+
+        self.low_freq = (
+            low_energy / Float32(low_count) if low_count > 0 else 0.0
+        )
+        self.mid_freq = (
+            mid_energy / Float32(mid_count) if mid_count > 0 else 0.0
+        )
+        self.high_freq = (
+            high_energy / Float32(high_count) if high_count > 0 else 0.0
+        )
 
 
 fn compile_shader(type: UInt32, mut source: String) raises -> UInt32:
@@ -43,6 +197,10 @@ struct App:
     var vao: UInt32
     var vbo: UInt32
     var animation_time: Float32
+    var audio: AudioAnalyzer
+    var low_freq: Float32
+    var mid_freq: Float32
+    var high_freq: Float32
 
     fn __init__(out self, width: Int, height: Int) raises:
         self.width = width
@@ -51,6 +209,10 @@ struct App:
         self.vao = 0
         self.vbo = 0
         self.animation_time = 0.0
+        self.audio = AudioAnalyzer()
+        self.low_freq = 0.0
+        self.mid_freq = 0.0
+        self.high_freq = 0.0
 
         var vertex_shader_source = """
         #version 330 core
@@ -101,7 +263,7 @@ struct App:
         glfw_window_hint(GLFW_CONTEXT_VERSION_MAJOR, 3)
         glfw_window_hint(GLFW_CONTEXT_VERSION_MINOR, 3)
 
-        var title = "Hello GLFW"
+        var title = "Shimmer"
         self.window = glfw_create_window(width, height, title)
 
         glfw_make_context_current(self.window)
@@ -146,7 +308,7 @@ struct App:
         gl_bind_buffer(GL_ARRAY_BUFFER, self.vbo)
         gl_buffer_data(
             GL_ARRAY_BUFFER,
-            size_of[__type_of(vertices)](),
+            size_of[type_of(vertices)](),
             vertices.unsafe_ptr().bitcast[NoneType](),
             GL_STATIC_DRAW,
         )
@@ -156,7 +318,7 @@ struct App:
         gl_bind_buffer(GL_ELEMENT_ARRAY_BUFFER, ebo)
         gl_buffer_data(
             GL_ELEMENT_ARRAY_BUFFER,
-            size_of[__type_of(indices)](),
+            size_of[type_of(indices)](),
             indices.unsafe_ptr().bitcast[NoneType](),
             GL_STATIC_DRAW,
         )
@@ -253,6 +415,12 @@ struct App:
                 if glfw_get_key(self.window, GLFW_KEY_R) == GLFW_PRESS:
                     self.animation_time = 0
 
+                # Update audio analysis
+                self.audio.update()
+                self.low_freq = self.audio.low_freq
+                self.mid_freq = self.audio.mid_freq
+                self.high_freq = self.audio.high_freq
+
                 var current_time = perf_counter()
                 if current_time - last_check_time > check_interval:
                     last_check_time = current_time
@@ -273,7 +441,16 @@ struct App:
 
                 run_func(
                     buf,
-                    Uniforms(self.width, self.height, self.animation_time),
+                    Uniforms(
+                        self.width,
+                        self.height,
+                        self.animation_time,
+                        Vec3(
+                            self.low_freq,
+                            self.mid_freq,
+                            self.high_freq,
+                        ),
+                    ),
                     ctx,
                 )
                 tex.copy_from(buf, ctx)
