@@ -10,7 +10,7 @@ from vec import *
 from gpu.host import DeviceContext, DeviceBuffer
 from gpu import global_idx
 from os.fstat import stat
-from sys.info import size_of
+from sys.info import size_of, CompilationTarget
 from sys.intrinsics import llvm_intrinsic
 from sys.ffi import DLHandle, external_call
 from time import sleep, perf_counter
@@ -361,6 +361,7 @@ struct App:
         gl_uniform2f(res_uniform, Float32(self.width), Float32(self.height))
 
     fn run(mut self) raises:
+        alias filename = "libshader.dylib" if CompilationTarget.is_macos() else "libshader.so"
         with DeviceContext() as ctx:
             var tex = GPUTexture(width=self.width, height=self.height, ctx=ctx)
 
@@ -371,7 +372,7 @@ struct App:
                 tex.width * tex.height
             )
 
-            var handle = DLHandle("libshader.dylib")
+            var handle = DLHandle(filename)
             var run_func = handle.get_function[
                 fn (
                     mut DeviceBuffer[DType.uint32],
@@ -380,9 +381,7 @@ struct App:
                 ) -> None
             ]("run_shader")
 
-            var last_mod_time = stat(
-                "libshader.dylib"
-            ).st_mtimespec.as_nanoseconds()
+            var last_mod_time = stat(filename).st_mtimespec.as_nanoseconds()
             var last_check_time = perf_counter()
             var check_interval = 0.1
 
@@ -425,12 +424,12 @@ struct App:
                 if current_time - last_check_time > check_interval:
                     last_check_time = current_time
                     var current_mod_time = stat(
-                        "libshader.dylib"
+                        filename
                     ).st_mtimespec.as_nanoseconds()
                     if current_mod_time != last_mod_time:
                         last_mod_time = current_mod_time
                         sleep(0.1)
-                        handle = DLHandle("libshader.dylib")
+                        handle = DLHandle(filename)
                         run_func = handle.get_function[
                             fn (
                                 mut DeviceBuffer[DType.uint32],
