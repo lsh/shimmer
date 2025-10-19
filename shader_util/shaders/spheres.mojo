@@ -1,10 +1,13 @@
+from math import clamp
+
+
 @always_inline
 fn map(var p: Vec3, uniforms: Uniforms) -> Float32:
     var q = p
     var p2 = rot2d({p.x, p.y}, q.z * 0.1 + uniforms.time * 0.25)
     p = Vec3(p2.x, p2.y, p.z)
     p = (p % 2.0) - 1.0
-    return p.length() - 0.4 - uniforms.audio.y
+    return p.length() - 0.4 - clamp(uniforms.audio.y, 0.0, 0.4)
 
 
 struct Spheres(Shader):

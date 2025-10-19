@@ -4,3 +4,5 @@
 *.egg-info
 build
 libshader.dylib
+kgen.trace.json.time-trace
+kgen.trace.json.time-events.txt
