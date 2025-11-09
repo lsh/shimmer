@@ -161,6 +161,14 @@ struct Vec3(Copyable, DevicePassable, Movable, Writable):
         return Self(rhs / self._value)
 
     @always_inline
+    fn __eq__(self, rhs: Self) -> Bool:
+        return self._value == rhs._value
+
+    @always_inline
+    fn __ne__(self, rhs: Self) -> Bool:
+        return self._value != rhs._value
+
+    @always_inline
     fn abs(self) -> Vec3:
         return Self(abs(self.x), abs(self.y), abs(self.z))
 
@@ -403,6 +411,14 @@ struct Vec2(Copyable, DevicePassable, Movable):
         return Self(rhs / self._value)
 
     @always_inline
+    fn __eq__(self, rhs: Self) -> Bool:
+        return self._value == rhs._value
+
+    @always_inline
+    fn __ne__(self, rhs: Self) -> Bool:
+        return self._value != rhs._value
+
+    @always_inline
     fn abs(self) -> Vec2:
         return Self(abs(self.x), abs(self.y))
 
@@ -617,6 +633,14 @@ struct Vec4(Copyable, DevicePassable, Movable):
     @always_inline
     fn __rtruediv__(self, rhs: Float32) -> Self:
         return Self(rhs / self._value)
+
+    @always_inline
+    fn __eq__(self, rhs: Self) -> Bool:
+        return self._value == rhs._value
+
+    @always_inline
+    fn __ne__(self, rhs: Self) -> Bool:
+        return self._value != rhs._value
 
     @always_inline
     fn dot(self, rhs: Self) -> Float32:
