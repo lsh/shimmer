@@ -4,18 +4,25 @@ channels = ["https://conda.modular.com/max-nightly", "conda-forge"]
 name = "shimmer"
 platforms = ["osx-arm64", "linux-64"]
 version = "0.1.0"
+preview = ["pixi-build"]
 
 [tasks]
 setup = { cmd = "mkdir -p build" }
-build-shader = { cmd = "mojo build --emit=shared-lib shader.mojo", depends-on = ["setup"] }
-build = { cmd = "mojo build main.mojo -o build/main", depends-on = ["setup", "build-shader"] }
-exec = { cmd = "./build/main", depends-on = ["build", "build-shader"] }
+build = { cmd = """
+mojo build main.mojo -o build/main && \
+install_name_tool -change \
+  /Users/runner/miniforge3/conda-bld/wgpu-native_1730778338515/work/target/aarch64-apple-darwin/release/deps/libwgpu_native.dylib \
+  @rpath/libwgpu_native.dylib \
+  build/main && \
+install_name_tool -add_rpath @loader_path/../.pixi/envs/default/lib build/main
+""", depends-on = ["setup"] }
+exec = { cmd = "./build/main", depends-on = ["build"] }
 
 [target.osx-arm64.activation]
-env = {MODULAR_MOJO_MAX_SYSTEM_LIBS="-lm,-L.pixi/envs/default/lib/,-lglfw,-lglad,-lportaudio,-framework,OpenGL"}
+env = { MODULAR_MOJO_MAX_SYSTEM_LIBS = "-lm,-L.pixi/envs/default/lib/,-lglfw,-lglad,-lportaudio,-lwgpu_native" }
 
 [target.linux-64.activation]
-env = {MODULAR_MOJO_MAX_SYSTEM_LIBS="-lrt,-ldl,-lpthread,-lm,-L/opt/cuda/lib/,-L.pixi/envs/default/lib/,-L/usr/lib/,-lGL,-lEGL,--lglfw,-lglad,-lportaudio"}
+env = { MODULAR_MOJO_MAX_SYSTEM_LIBS = "-lrt,-ldl,-lpthread,-lm,-L/opt/cuda/lib/,-L.pixi/envs/default/lib/,-L/usr/lib/,-lGL,-lEGL, shlglfw,-lglad,-lportaudio,-lwgpu_native" }
 
 [dependencies]
 max = ">=25.7.0.dev2025092305,<26"
@@ -23,3 +30,6 @@ mojo = ">=0.25.7.0.dev2025092305,<0.26"
 glfw = ">=3.4.0,<4"
 glad = ">=0.1.36,<0.2"
 portaudio = ">=19.7.0,<20"
+glfw-mojo = { git = "https://github.com/lsh/glfw-mojo" }
+wgpu-mojo = { git = "https://github.com/lsh/wgpu-mojo" }
+wgpu-native = ">=22.1.0,<23"
