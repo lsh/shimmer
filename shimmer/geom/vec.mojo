@@ -1,5 +1,6 @@
 import math
 import builtin
+from memory import LegacyOpaquePointer as OpaquePointer
 from builtin.device_passable import DevicePassable
 
 
@@ -7,6 +8,10 @@ from builtin.device_passable import DevicePassable
 @register_passable("trivial")
 struct Vec3(Copyable, DevicePassable, Movable, Writable):
     var _value: SIMD[DType.float32, 4]
+
+    alias X = Vec3(1, 0, 0)
+    alias Y = Vec3(0, 1, 0)
+    alias Z = Vec3(0, 0, 1)
 
     alias device_type: AnyType = Self
 
@@ -489,6 +494,12 @@ struct Vec2(Copyable, DevicePassable, Movable):
 @register_passable("trivial")
 struct Vec4(Copyable, DevicePassable, Movable):
     var _value: SIMD[DType.float32, 4]
+
+    alias ZERO = Self(0, 0, 0, 0)
+    alias X = Self(1, 0, 0, 0)
+    alias Y = Self(0, 1, 0, 0)
+    alias Z = Self(0, 0, 1, 0)
+    alias W = Self(0, 0, 0, 1)
 
     alias device_type: AnyType = Self
 

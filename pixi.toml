@@ -1,35 +1,33 @@
 [workspace]
-authors = ["Lukas Hermann <1734032+lsh@users.noreply.github.com>"]
+authors = ["Lukas Hermann"]
+platforms = ["osx-arm64"]
 channels = ["https://conda.modular.com/max-nightly", "conda-forge"]
-name = "shimmer"
-platforms = ["osx-arm64", "linux-64"]
-version = "0.1.0"
 preview = ["pixi-build"]
+
+[package]
+name = "Shimmer"
+version = "0.1.0"
+description = "A creative coding framework for Mojo"
+
+[package.build]
+backend = { name = "pixi-build-rattler-build", version = "*" }
+
+[dependencies]
+mojo = ">=0.25.7.0.dev2025110305,<0.26"
+max = ">=25.7.0.dev2025110305,<26"
+wgpu-mojo = { git = "https://github.com/lsh/wgpu-mojo" }
+glfw = ">=3.4,<4"
+wgpu-native = ">=22.1.0,<23"
 
 [tasks]
 setup = { cmd = "mkdir -p build" }
-build = { cmd = """
-mojo build main.mojo -o build/main && \
-install_name_tool -change \
-  /Users/runner/miniforge3/conda-bld/wgpu-native_1730778338515/work/target/aarch64-apple-darwin/release/deps/libwgpu_native.dylib \
-  @rpath/libwgpu_native.dylib \
-  build/main && \
-install_name_tool -add_rpath @loader_path/../.pixi/envs/default/lib build/main
-""", depends-on = ["setup"] }
+build = { cmd = "bash fix_dylib.sh", depends-on = ["setup"] }
 exec = { cmd = "./build/main", depends-on = ["build"] }
+# Quick build without fixing library paths (for development)
+quick-build = { cmd = "mojo build main.mojo" }
 
-[target.osx-arm64.activation]
-env = { MODULAR_MOJO_MAX_SYSTEM_LIBS = "-lm,-L.pixi/envs/default/lib/,-lglfw,-lglad,-lportaudio,-lwgpu_native" }
+[activation.env]
+MODULAR_MOJO_MAX_SYSTEM_LIBS = "-lm,-L.pixi/envs/default/lib/,-lglfw,-lwgpu_native"
 
-[target.linux-64.activation]
-env = { MODULAR_MOJO_MAX_SYSTEM_LIBS = "-lrt,-ldl,-lpthread,-lm,-L/opt/cuda/lib/,-L.pixi/envs/default/lib/,-L/usr/lib/,-lGL,-lEGL, shlglfw,-lglad,-lportaudio,-lwgpu_native" }
-
-[dependencies]
-max = ">=25.7.0.dev2025092305,<26"
-mojo = ">=0.25.7.0.dev2025092305,<0.26"
-glfw = ">=3.4.0,<4"
-glad = ">=0.1.36,<0.2"
-portaudio = ">=19.7.0,<20"
-glfw-mojo = { git = "https://github.com/lsh/glfw-mojo" }
-wgpu-mojo = { git = "https://github.com/lsh/wgpu-mojo" }
-wgpu-native = ">=22.1.0,<23"
+# [target.linux-64.activation]
+# env = { MODULAR_MOJO_MAX_SYSTEM_LIBS = "-lrt,-ldl,-lpthread,-lm,-L/opt/cuda/lib/,-L.pixi/envs/default/lib/,-L/usr/lib/,-lGL,-lEGL, shlglfw,-lglad,-lportaudio,-lwgpu_native" }

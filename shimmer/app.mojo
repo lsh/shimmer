@@ -1,5 +1,4 @@
 from ._time import Instant, Duration
-from .draw import Draw
 from .event import WindowEvent, Event, LoopEvent, Update
 from .frame import Frame
 from .state import Time
@@ -8,6 +7,7 @@ from .window import Window
 from shimmer.geom import Vec2
 import wgpu
 
+from memory import ArcPointer
 from utils import Variant
 
 
@@ -64,19 +64,21 @@ struct Context:
         var title = "Shimmer"
         self.config = {}
         self.duration = {}
-        self._backends = wgpu.InstanceBackend.primary
+        self._backends = wgpu.InstanceBackend.metal
         self._instance = wgpu.Instance()
 
-        # Create window and surface first
+        # Create window first
         glfw.Window.default_hints()
         glfw.Window.hint(glfw.ContextHint.client_api, glfw.ContextHint.no_api)
         var glfw_window = glfw.Window(640, 480, title)
+
+        # Create surface BEFORE moving the window (surface needs the window handle)
         var surface = self._instance.create_surface(glfw_window)
 
-        # Request adapter with the surface to ensure compatibility
+        # Request adapter WITH surface so it knows about surface capabilities
         self._adapter = self._instance.request_adapter_sync(surface)
 
-        # Now create the Window with the adapter and surface
+        # Now create the Window with the adapter and surface (moving window and surface)
         self.window = Window(
             self._instance, self._adapter, glfw_window^, surface^, 640, 480
         )
@@ -122,22 +124,28 @@ struct App[
         var model = model_fn(ctx)
 
         var model_ctx = (
-            UnsafePointer(to=ctx).as_any_origin(),
-            UnsafePointer(to=model).as_any_origin(),
+            wgpu._cffi.FFIPointer[mut=True](UnsafePointer(to=ctx)),
+            wgpu._cffi.FFIPointer[mut=True](UnsafePointer(to=model)),
         )
         ctx.window.inner.set_user_pointer[
-            Tuple[UnsafePointer[Context], UnsafePointer[ModelType]]
+            Tuple[
+                wgpu._cffi.FFIPointer[Context, mut=True],
+                wgpu._cffi.FFIPointer[ModelType, mut=True],
+            ]
         ](UnsafePointer(to=model_ctx))
 
         fn resize_cb(window: glfw.Window, width: Int32, height: Int32):
             var ctx_ptr, model_ptr = window.get_user_pointer[
-                Tuple[UnsafePointer[Context], UnsafePointer[ModelType]]
+                Tuple[
+                    wgpu._cffi.FFIPointer[Context, mut=True],
+                    wgpu._cffi.FFIPointer[ModelType, mut=True],
+                ]
             ]()[]
             if event_fn:
                 try:
                     event_fn.value()(
-                        ctx_ptr[],
-                        model_ptr[],
+                        ctx_ptr.unsafe_ptr()[],
+                        model_ptr.unsafe_ptr()[],
                         EventType(
                             WindowEvent.resized(
                                 Vec2(Float32(width), Float32(height))
@@ -305,7 +313,6 @@ fn run_loop[
         last_update=loop_start,
         total_updates=0,
     )
-    ctx.window.inner.make_context_current()
 
     # Run the event loop.
     while not ctx.window.should_close():
@@ -333,40 +340,40 @@ fn run_loop[
         else:
             do_update(loop_state)
 
-        var surface_tex = ctx.window.surface.get_current_texture()
         var nth_frame = ctx.window.frame_count
 
-        var surface_texture = surface_tex.texture[].create_view(
-            format=surface_tex.texture[].get_format(),
-            dimension=wgpu.TextureViewDimension.d2,
-            base_mip_level=0,
-            mip_level_count=1,
-            base_array_layer=0,
-            array_layer_count=1,
-            aspect=wgpu.TextureAspect.all,
-        )
+        with ctx.window.surface.get_current_texture() as surface_tex:
+            var surface_texture = surface_tex.texture.create_view(
+                {
+                    format = surface_tex.texture.get_format(),
+                    dimension = wgpu.TextureViewDimension.d2,
+                    base_mip_level = 0,
+                    mip_level_count = 1,
+                    base_array_layer = 0,
+                    array_layer_count = 1,
+                    aspect = wgpu.TextureAspect.all,
+                }
+            )
 
-        var w, h = ctx.window.inner.get_size()
-        var window_rect = shimmer.geom.Rect(
-            (Float32(0.0), Float32(0.0)), (Float32(w), Float32(h))
-        )
-        var raw_frame = shimmer.frame.RawFrame(
-            ctx.window.device,
-            ctx.window.queue,
-            nth_frame,
-            surface_texture,
-            ctx.window.surface_conf.format,
-            window_rect,
-        )
+            var w, h = ctx.window.inner.get_size()
+            var window_rect = shimmer.geom.Rect(
+                width=Float32(w), height=Float32(h)
+            )
+            var raw_frame = shimmer.frame.RawFrame(
+                ctx.window.device,
+                ctx.window.queue,
+                nth_frame,
+                ArcPointer(surface_texture^),
+                ctx.window.surface_conf.format,
+                window_rect,
+            )
 
-        if view_fn:
-            var view_func = view_fn.value()
-            view_func(ctx, model, Frame(raw_frame^))
-        else:
-            raw_frame.submit()
+            if view_fn:
+                view_fn.value()(ctx, model, Frame(raw_frame^))
+            else:
+                raw_frame^.submit()
 
-        ctx.window.surface.present()
-        _ = surface_tex^  # Keep surface texture alive until after present
+            ctx.window.surface.present()
 
         ctx.window.frame_count += 1
 

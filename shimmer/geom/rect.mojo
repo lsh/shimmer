@@ -15,6 +15,10 @@ struct Rect[dtype: DType = DType.float32](
     The start and end positions of the Rectangle on the y axis.
     """
 
+    fn __init__(out self, *, width: Scalar[dtype], height: Scalar[dtype]):
+        self.x = (Scalar[dtype](0), Scalar[dtype](0))
+        self.y = (width, height)
+
 
 @fieldwise_init
 struct Padding[dtype: DType = DType.float32](Copyable, Movable):
