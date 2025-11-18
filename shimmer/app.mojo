@@ -143,6 +143,16 @@ struct App[
             ]()[]
             if event_fn:
                 try:
+                    ctx_ptr.unsafe_ptr()[].window.surface_conf.width = Int(
+                        width
+                    )
+                    ctx_ptr.unsafe_ptr()[].window.surface_conf.height = Int(
+                        height
+                    )
+                    ctx_ptr.unsafe_ptr()[].window.surface.configure(
+                        ctx_ptr.unsafe_ptr()[].window.device[],
+                        ctx_ptr.unsafe_ptr()[].window.surface_conf,
+                    )
                     event_fn.value()(
                         ctx_ptr.unsafe_ptr()[],
                         model_ptr.unsafe_ptr()[],

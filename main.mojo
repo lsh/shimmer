@@ -12,11 +12,6 @@ from random import random_float64, random_ui64
 import sys
 
 
-fn smoothstep(edge0: Float32, edge1: Float32, x: Float32) -> Float32:
-    var t = ((x - edge0) / (edge1 - edge0)).clamp(0.0, 1.0)
-    return t * t * (3.0 - 2.0 * t)
-
-
 fn mix(x: Float32, y: Float32, a: Float32) -> Float32:
     return x * (1.0 - a) + y * a
 
@@ -29,91 +24,13 @@ fn mix(x: Vec3, y: Vec3, a: Float32) -> Vec3:
     }
 
 
-fn poisson_sphere_sampling_fast[
-    k: Int = 30
-](
-    min_distance: Float32,
-    radius: Float32 = 1.0,
-    max_points: Optional[Int] = None,
-) -> List[Vec3]:
-    points: List[Vec3] = []
-    active_list: List[Vec3] = []
-
-    fn random_sphere_point() -> Vec3:
-        u = Float32(random_float64(0, 1))
-        v = Float32(random_float64(0, 1))
-        theta = 2 * math.pi * u
-        phi = math.acos(2 * v - 1)
-        x = radius * math.sin(phi) * math.cos(theta)
-        y = radius * math.sin(phi) * math.sin(theta)
-        z = radius * math.cos(phi)
-        return Vec3(x, y, z)
-
-    fn spherical_distance(p1: Vec3, p2: Vec3) -> Float32:
-        p1_norm = p1 / p1.length()
-        p2_norm = p2 / p2.length()
-        dot = math.clamp(p1_norm.dot(p2_norm), -1.0, 1.0)
-        return math.acos(dot) * radius
-
-    fn random_point_around(
-        center: Vec3, min_dist: Float32, max_dist: Float32
-    ) -> Optional[Vec3]:
-        for _ in range(100):
-            point = random_sphere_point()
-            dist = spherical_distance(center, point)
-            if min_dist <= dist <= max_dist:
-                return point
-        return None
-
-    fn is_valid(
-        point: Vec3,
-    ) unified {
-        read points, read radius, read min_distance, read spherical_distance
-    } -> Bool:
-        # Check distance to all existing points
-        for existing_point in points:
-            dist = spherical_distance(point, existing_point)
-            if dist < min_distance:
-                return False
-        return True
-
-    # Initialize
-    initial = random_sphere_point()
-    points.append(initial)
-    active_list.append(initial)
-
-    # Main loop
-    while len(active_list) > 0:
-        if max_points and len(points) >= max_points.value():
-            break
-
-        idx = random_ui64(0, len(active_list))
-        center = active_list[idx]
-
-        found = False
-        for _ in range(k):
-            new_point = random_point_around(
-                center, min_distance, 2 * min_distance
-            )
-            if new_point is not None and is_valid(new_point.value()):
-                points.append(new_point.value())
-                active_list.append(new_point.value())
-                found = True
-                break
-
-        if not found:
-            _ = active_list.pop(Int(idx))
-
-    return points^
-
-
 @fieldwise_init
 struct Uniforms(Copyable, DevicePassable, ImplicitlyCopyable, Movable):
     var width: Int
     var height: Int
     var time: Float32
 
-    alias device_type: AnyType = Self
+    comptime device_type: AnyType = Self
 
     fn _to_device_type(self, target: LegacyOpaquePointer):
         target.bitcast[Self.device_type]()[] = self
@@ -138,15 +55,12 @@ struct Model(Movable):
     var device_ctx: DeviceContext
     var render_pipeline: wgpu.RenderPipeline
     var texture_data: DeviceBuffer[DType.uint8]
-    var random_offsets: DeviceBuffer[DType.float32]
-    var random_offsets_original: DeviceBuffer[DType.float32]
     var vertex_buffer: wgpu.Buffer
     var index_buffer: wgpu.Buffer
     var num_indices: Int
     var uniform_bind_group: wgpu.BindGroup
     var uniform_buffer: wgpu.Buffer
     var uniforms: Uniforms
-    var random_step: List[Float32]
     var texture: wgpu.Texture
     var texture_view: wgpu.TextureView
     var texture_sampler: wgpu.Sampler
@@ -155,28 +69,16 @@ struct Model(Movable):
 fn model(ctx: Context) raises -> Model:
     try:
         with DeviceContext() as device_ctx:
-            # The gpu device associated with the window's swapchain
-            # let window = app.window(w_id).unwrap();
             var device = ctx.window.device
-            # var format = Frame.TEXTURE_FORMAT
-            # let sample_count = window.msaa_samples();
 
             var verts: InlineArray[Vertex, 4] = [
-                Vertex({-1.0, -1.0, 0.0}, {0.0, 1.0}),  # Bottom-left
-                Vertex({1.0, -1.0, 0.0}, {1.0, 1.0}),  # Bottom-right
-                Vertex({1.0, 1.0, 0.0}, {1.0, 0.0}),  # Top-right
-                Vertex({-1.0, 1.0, 0.0}, {0.0, 0.0}),  # Top-left
+                {{-1.0, -1.0, 0.0}, {0.0, 1.0}},
+                {{1.0, -1.0, 0.0}, {1.0, 1.0}},
+                {{1.0, 1.0, 0.0}, {1.0, 0.0}},
+                {{-1.0, 1.0, 0.0}, {0.0, 0.0}},
             ]
-            var faces: InlineArray[UInt32, 6] = [
-                0,
-                1,
-                2,  # First triangle (bottom-left, bottom-right, top-right)
-                0,
-                2,
-                3,  # Second triangle (bottom-left, top-right, top-left)
-            ]
+            var faces: InlineArray[UInt32, 6] = [0, 1, 2, 0, 2, 3]
 
-            # Load shader modules.
             var vs_desc = """
             struct Uniforms {
                 time: f32,
@@ -232,7 +134,6 @@ fn model(ctx: Context) raises -> Model:
             var fs_mod = device[].create_wgsl_shader_module(code=fs_desc)
             var vs_mod = device[].create_wgsl_shader_module(code=vs_desc)
 
-            # Create the vertex buffer.
             var vertex_usage = (
                 wgpu.BufferUsage.vertex | wgpu.BufferUsage.copy_dst
             )
@@ -364,40 +265,13 @@ fn model(ctx: Context) raises -> Model:
                     ),
                     primitive = wgpu.PrimitiveState(
                         topology=wgpu.PrimitiveTopology.triangle_list,
-                        cull_mode=wgpu.CullMode.none,  # No culling for fullscreen quad
+                        cull_mode=wgpu.CullMode.none,
                     ),
                     multisample = wgpu.MultisampleState(),
                     layout = Pointer(to=pipeline_layout).get_immutable(),
-                    depth_stencil = None,  # No depth testing needed for fullscreen quad
+                    depth_stencil = None,
                 }
             )
-
-            var sampled_points = poisson_sphere_sampling_fast(
-                1.0, max_points=100
-            )
-            var random_offsets = device_ctx.enqueue_create_buffer[
-                DType.float32
-            ](len(sampled_points) * 3)
-            var random_offsets_original = device_ctx.enqueue_create_buffer[
-                DType.float32
-            ](len(sampled_points) * 3)
-
-            var random_step = [
-                Float32(random_float64(0.0, 2.0 * math.pi))
-                for _ in range(len(sampled_points))
-            ]
-
-            with random_offsets.map_to_host() as r_host:
-                for i in range(len(random_offsets) // 3):
-                    r_host[i * 3 + 0] = sampled_points[i].x
-                    r_host[i * 3 + 1] = sampled_points[i].y
-                    r_host[i * 3 + 2] = sampled_points[i].z
-
-            with random_offsets_original.map_to_host() as r_orig_host:
-                for i in range(len(random_offsets_original) // 3):
-                    r_orig_host[i * 3 + 0] = sampled_points[i].x
-                    r_orig_host[i * 3 + 1] = sampled_points[i].y
-                    r_orig_host[i * 3 + 2] = sampled_points[i].z
 
             var uniform_buffer = device[].create_buffer[Uniforms](
                 {
@@ -465,20 +339,6 @@ fn model(ctx: Context) raises -> Model:
                 width * height * 4
             )
 
-            # Run the UV texture kernel
-            alias uv_kernel = texture_kernel[origin_of(texture_data)]
-            device_ctx.enqueue_function_checked[uv_kernel, uv_kernel](
-                Span[UInt8, origin_of(texture_data)](
-                    ptr=UnsafePointer(
-                        texture_data.unsafe_ptr()
-                    ).unsafe_origin_cast[origin_of(texture_data)](),
-                    length=len(texture_data),
-                ),
-                Uniforms(width, height, 0),
-                grid_dim=width * height,
-                block_dim=1,
-            )
-
             with texture_data.map_to_host() as texture_host:
                 ctx.window.queue[].write_texture(
                     wgpu.ImageCopyTexture(
@@ -505,7 +365,7 @@ fn model(ctx: Context) raises -> Model:
                     ),
                 )
 
-            alias uniform_bind_group_origin = origin_of(
+            comptime uniform_bind_group_origin = origin_of(
                 texture_view, uniform_buffer, texture_sampler
             )
             uniform_bind_group_entries = [
@@ -537,9 +397,6 @@ fn model(ctx: Context) raises -> Model:
                 uniform_bind_group=uniform_bind_group^,
                 uniform_buffer=uniform_buffer^,
                 uniforms=uniforms^,
-                random_offsets=random_offsets^,
-                random_offsets_original=random_offsets_original^,
-                random_step=random_step^,
                 texture=texture^,
                 texture_view=texture_view^,
                 texture_sampler=texture_sampler^,
@@ -551,11 +408,25 @@ fn model(ctx: Context) raises -> Model:
             pass
 
 
-@always_inline
-fn rot2d(p: Vec2, a: Float32) -> Vec2:
+fn rot3d_x(p: Vec3, a: Float32) -> Vec3:
+    """Rotate a 3D point around the X axis."""
     var c = math.cos(a)
     var s = math.sin(a)
-    return {p.x * c - p.y * s, p.x * s + p.y * c}
+    return {p.x, p.y * c - p.z * s, p.y * s + p.z * c}
+
+
+fn rot3d_y(p: Vec3, a: Float32) -> Vec3:
+    """Rotate a 3D point around the Y axis."""
+    var c = math.cos(a)
+    var s = math.sin(a)
+    return {p.x * c + p.z * s, p.y, -p.x * s + p.z * c}
+
+
+fn rot3d_z(p: Vec3, a: Float32) -> Vec3:
+    """Rotate a 3D point around the Z axis."""
+    var c = math.cos(a)
+    var s = math.sin(a)
+    return {p.x * c - p.y * s, p.x * s + p.y * c, p.z}
 
 
 @always_inline
@@ -600,14 +471,12 @@ fn trace[
 @always_inline
 fn map(var p: Vec3, uniforms: Uniforms) -> Float32:
     var q = p
-    var p2 = rot2d({p.x, p.y}, q.z * 0.1 + uniforms.time * 0.25)
-    p = Vec3(p2.x, p2.y, p.z)
+    p = rot3d_z(p, q.z * 0.1 + uniforms.time * 0.25)
     p = (p % 2.0) - 1.0
     return p.length() - 0.4  # - math.clamp(uniforms.audio.y, 0.0, 0.4)
 
 
-fn main_image(uv: Vec2, uniforms: Uniforms) -> Vec3:
-    alias far = 20.0
+fn main_image[far: Float32 = 20.0](uv: Vec2, uniforms: Uniforms) -> Vec3:
     var q = uv * 2.0 - 1.0
     (UnsafePointer(to=q).bitcast[Float32]())[] *= Float32(
         uniforms.width
@@ -621,7 +490,7 @@ fn main_image(uv: Vec2, uniforms: Uniforms) -> Vec3:
     var n = calc_normal[map](p, uniforms)
     if t > far:
         return Vec3(0.0, 0.0, 0.0)
-    alias lp = Vec3(0.0, 0.5, 0.0)
+    comptime lp = Vec3(0.0, 0.5, 0.0)
     var ld = (lp - p).normalize()
     var diff = n.dot(ld) * 0.5 + 0.5
     diff *= diff
@@ -632,8 +501,8 @@ fn main_image(uv: Vec2, uniforms: Uniforms) -> Vec3:
 
 
 fn texture_kernel[
-    texture_origin: MutOrigin,
-](texture_data: Span[UInt8, texture_origin], uniforms: Uniforms):
+    texture_origin: MutOrigin
+](texture_data: Span[UInt8, texture_origin], uniforms: Uniforms,):
     var idx = Int(global_idx.x)
     if idx >= uniforms.width * uniforms.height:
         return
@@ -641,41 +510,20 @@ fn texture_kernel[
     var x = idx % uniforms.width
     var y = idx // uniforms.width
 
-    # Calculate UV coordinates (0.0 to 1.0)
     var u = Float32(x) / Float32(uniforms.width)
     var v = Float32(y) / Float32(uniforms.height)
     var col = main_image({u, v}, uniforms)
 
-    # Convert to RGBA (UV as RG, B=128, A=255)
     var r = UInt8(col.x * 255.0)
     var g = UInt8(col.y * 255.0)
     var b = UInt8(col.z * 255.0)
     var a = UInt8(255)
 
-    # Write to texture buffer
     var pixel_idx = idx * 4
     texture_data[pixel_idx + 0] = r
     texture_data[pixel_idx + 1] = g
     texture_data[pixel_idx + 2] = b
     texture_data[pixel_idx + 3] = a
-
-
-fn kernel2[
-    pos_origin: MutOrigin,
-    colors_origin: MutOrigin,
-](positions: Span[Float32, pos_origin], max_dist: Float32, time: Float32,):
-    # Multi-point gradient using mix
-    var t = max_dist
-    if t < 0.1:
-        color = mix(2.0, 0.424, t / 0.1)
-    elif t < 0.2:
-        color = mix(0.424, 0.627, (t - 0.1) / 0.1)
-    elif t < 0.4:
-        color = mix(0.627, 0.599, (t - 0.2) / 0.2)
-    elif t < 0.45:
-        color = mix(0.599, 0.474, (t - 0.4) / 0.05)
-    else:
-        color = mix(0.474, 0.598, (t - 0.45) / 0.55)
 
 
 fn update(ctx: Context, mut model: Model, var update: Update) raises:
@@ -690,11 +538,10 @@ fn update(ctx: Context, mut model: Model, var update: Update) raises:
         ),
     )
 
-    # Generate UV texture using GPU kernel
     var width = Int(ctx.window.surface_conf.width)
     var height = Int(ctx.window.surface_conf.height)
 
-    alias uv_kernel = texture_kernel[origin_of(model.texture_data)]
+    comptime uv_kernel = texture_kernel[origin_of(model.texture_data)]
     model.device_ctx.enqueue_function_checked[uv_kernel, uv_kernel](
         Span[UInt8, origin_of(model.texture_data)](
             ptr=UnsafePointer(
@@ -707,7 +554,6 @@ fn update(ctx: Context, mut model: Model, var update: Update) raises:
         block_dim=1,
     )
 
-    # Write texture data to GPU texture
     with model.texture_data.map_to_host() as texture_host:
         ctx.window.queue[].write_texture(
             wgpu.ImageCopyTexture(
@@ -734,67 +580,112 @@ fn update(ctx: Context, mut model: Model, var update: Update) raises:
             ),
         )
 
-    return  # Skip the complex displacement logic for simple triangle test
-    # Rotate from original positions each frame to avoid accumulation
-    with model.random_offsets_original.map_to_host() as r_orig_host:
-        with model.random_offsets.map_to_host() as r_host:
-            var rot_x = Mat4.from_rotation_x(ctx.time * 0.5)
-            var rot_y = Mat4.from_rotation_y(ctx.time * 0.35)
-            for i in range(len(r_host) // 3):
-                var pt = rot_x.transform_point3(
-                    Vec3(
-                        r_orig_host[i * 3 + 0],
-                        r_orig_host[i * 3 + 1],
-                        r_orig_host[i * 3 + 2],
-                    )
-                )
-                pt *= 1.0 + 0.5 + 0.5 * math.sin(ctx.time)
-                pt = rot_y.transform_point3(pt)
-                r_host[i * 3 + 0] = pt.x * (
-                    1.0 + 0.5 * math.cos(ctx.time + model.random_step[i])
-                )
-                r_host[i * 3 + 1] = pt.y * (
-                    1.0 + 0.5 * math.cos(ctx.time + model.random_step[i])
-                )
-                r_host[i * 3 + 2] = pt.z * (
-                    1.0 + 0.5 * math.cos(ctx.time + model.random_step[i])
-                )
-
-    # alias k = kernel[origin_of(model.random_offsets),]
-    # model.device_ctx.enqueue_function_checked[k, k](
-    #     Span[Float32, origin_of(model.vertices)](
-    #         ptr=UnsafePointer(model.vertices.unsafe_ptr()).unsafe_origin_cast[
-    #             origin_of(model.vertices)
-    #         ](),
-    #         length=len(model.vertices),
-    #     ).get_immutable(),
-    #     Span[Float32, origin_of(model.random_offsets)](
-    #         ptr=UnsafePointer(
-    #             model.random_offsets.unsafe_ptr()
-    #         ).unsafe_origin_cast[origin_of(model.random_offsets)](),
-    #         length=len(model.random_offsets),
-    #     ).get_immutable(),
-    #     Span[Float32, origin_of(model.scratch)](
-    #         ptr=UnsafePointer(model.scratch.unsafe_ptr()).unsafe_origin_cast[
-    #             origin_of(model.scratch)
-    #         ](),
-    #         length=len(model.scratch),
-    #     ),
-    #     Span[Float32, origin_of(model.colors)](
-    #         ptr=UnsafePointer(model.colors.unsafe_ptr()).unsafe_origin_cast[
-    #             origin_of(model.colors)
-    #         ](),
-    #         length=len(model.colors),
-    #     ),
-    #     ctx.time,
-    #     grid_dim=len(model.vertices) // 3,
-    #     block_dim=1,
-    # )
-
 
 fn event(ctx: Context, mut model: Model, var event: Event) raises:
     if event.is_window_event() and event.get_window_event().is_resized():
-        print(event)
+        var wh = event.get_window_event().get_resized().value
+
+        model.uniforms.width = Int(wh.x)
+        model.uniforms.height = Int(wh.y)
+
+        model.texture = ctx.window.device[].create_texture(
+            wgpu.TextureDescriptor(
+                label="fullscreen texture",
+                size=wgpu.Extent3D(
+                    width=ctx.window.surface_conf.width,
+                    height=ctx.window.surface_conf.height,
+                    depth_or_array_layers=1,
+                ),
+                mip_level_count=1,
+                sample_count=1,
+                dimension=wgpu.TextureDimension.d2,
+                format=wgpu.TextureFormat.rgba8_unorm,
+                usage=wgpu.TextureUsage.texture_binding
+                | wgpu.TextureUsage.copy_dst
+                | wgpu.TextureUsage.render_attachment,
+                view_formats=List[wgpu.TextureFormat](),
+            )
+        )
+        model.texture_view = model.texture.create_view(
+            wgpu.TextureViewDescriptor(
+                label="fullscreen texture view",
+                format=wgpu.TextureFormat.rgba8_unorm,
+                dimension=wgpu.TextureViewDimension.d2,
+                aspect=wgpu.TextureAspect.all,
+                base_mip_level=0,
+                mip_level_count=1,
+                base_array_layer=0,
+                array_layer_count=1,
+            )
+        )
+        model.texture_data = model.device_ctx.enqueue_create_buffer[
+            DType.uint8
+        ](Int(wh.x) * Int(wh.y) * 4)
+
+        comptime uniform_bind_group_origin = origin_of(
+            model.texture_view, model.uniform_buffer, model.texture_sampler
+        )
+        uniform_bind_group_entries = [
+            wgpu.BindGroupEntry[uniform_bind_group_origin](
+                0,
+                wgpu.BufferBinding[uniform_bind_group_origin](
+                    model.uniform_buffer, 0, sys.size_of[Uniforms]()
+                ),
+            ),
+            wgpu.BindGroupEntry[uniform_bind_group_origin](
+                1, model.texture_view
+            ),
+            wgpu.BindGroupEntry[uniform_bind_group_origin](
+                2, model.texture_sampler
+            ),
+        ]
+
+        var bind_group_entries = [
+            wgpu.BindGroupLayoutEntry(
+                binding=0,
+                visibility=wgpu.ShaderStage.fragment | wgpu.ShaderStage.vertex,
+                type=wgpu.BufferBindingLayout(
+                    type=wgpu.BufferBindingType.uniform,
+                    has_dynamic_offset=True,
+                    min_binding_size=sys.size_of[Uniforms](),
+                ),
+                count=0,
+            ),
+            wgpu.BindGroupLayoutEntry(
+                binding=1,
+                visibility=wgpu.ShaderStage.fragment,
+                type=wgpu.TextureBindingLayout(
+                    sample_type=wgpu.TextureSampleType.float,
+                    view_dimension=wgpu.TextureViewDimension.d2,
+                    multisampled=False,
+                ),
+                count=0,
+            ),
+            wgpu.BindGroupLayoutEntry(
+                binding=2,
+                visibility=wgpu.ShaderStage.fragment,
+                type=wgpu.SamplerBindingLayout(
+                    type=wgpu.SamplerBindingType.filtering,
+                ),
+                count=0,
+            ),
+        ]
+        var bind_group_layout = ArcPointer(
+            ctx.window.device[].create_bind_group_layout(
+                {
+                    "bind group layout",
+                    bind_group_entries,
+                }
+            )
+        )
+
+        model.uniform_bind_group = ctx.window.device[].create_bind_group(
+            {
+                "bind group",
+                bind_group_layout,
+                uniform_bind_group_entries,
+            }
+        )
 
 
 fn view(ctx: Context, model: Model, var frame: Frame) raises:
@@ -821,7 +712,6 @@ fn view(ctx: Context, model: Model, var frame: Frame) raises:
     )
     rp.set_bind_group(0, model.uniform_bind_group, List[UInt32](0))
     rp.draw_indexed(model.num_indices, 1, 0, 0, 0)
-    rp^.end()
 
     frame^.submit()
 
