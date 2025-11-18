@@ -17,15 +17,15 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/jupyter_client-8.6.3-pyhd8ed1ab_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/jupyter_core-5.9.1-pyhc90fa1f_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/krb5-1.21.3-h237132a_0.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libblas-3.9.0-39_h51639a9_openblas.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libcblas-3.9.0-39_hb0561ab_openblas.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libblas-3.11.0-0_h51639a9_openblas.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libcblas-3.11.0-0_hb0561ab_openblas.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libcxx-21.1.5-hf598326_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libedit-3.1.20250104-pl5321hafb1f1b_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libexpat-2.7.1-hec049ff_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libffi-3.5.2-he5f378a_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libgfortran-15.2.0-hfcf01ff_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libgfortran5-15.2.0-h742603c_1.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/liblapack-3.9.0-39_hd9741b5_openblas.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/liblapack-3.11.0-0_hd9741b5_openblas.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/liblzma-5.8.1-h39f12f2_2.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libmpdec-4.0.0-h5505292_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libopenblas-0.3.30-openmp_ha158390_3.conda
@@ -41,7 +41,7 @@ environments:
       - conda: https://conda.modular.com/max-nightly/noarch/mojo-python-0.25.7.0.dev2025111305-release.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/mypy_extensions-1.1.0-pyha770c72_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/ncurses-6.5-h5e97a16_3.conda
-      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/numpy-2.3.4-py313h9771d21_0.conda
+      - conda: https://conda.anaconda.org/conda-forge/osx-arm64/numpy-2.3.5-py313h9771d21_0.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/openssl-3.6.0-h5503f6c_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/packaging-25.0-pyh29332c3_1.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/pathspec-0.12.1-pyhd8ed1ab_1.conda
@@ -61,7 +61,7 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/typing-extensions-4.15.0-h396c80c_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/typing_extensions-4.15.0-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2025b-h78e105d_0.conda
-      - conda: git+https://github.com/lsh/wgpu-mojo#76d46e3a54aef1381050fe684fb6ff2d135a1d5c
+      - conda: git+https://github.com/lsh/wgpu-mojo#fa8934b5b4497fba4aeb97f525a9b860b305513e
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/wgpu-native-22.1.0.5-h5f1966e_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/yaml-0.2.5-h925e9cb_3.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/zeromq-4.3.5-h888dc83_9.conda
@@ -186,35 +186,33 @@ packages:
   license_family: MIT
   size: 1155530
   timestamp: 1719463474401
-- conda: https://conda.anaconda.org/conda-forge/osx-arm64/libblas-3.9.0-39_h51639a9_openblas.conda
-  build_number: 39
-  sha256: 34a8f48a278c9147de8bdb1356d9b26bd9f6f351cd8e189c912f849cc83dc0c6
-  md5: d6a7d80a3af411fcf5de7fa6208c6ab7
+- conda: https://conda.anaconda.org/conda-forge/osx-arm64/libblas-3.11.0-0_h51639a9_openblas.conda
+  sha256: e6ac3bd2ef1025cd4e427a447d627b084491016c992d07d3a26cbbb66ede460d
+  md5: eaa71d7de4790f012d790a6360996e2d
   depends:
   - libopenblas >=0.3.30,<0.3.31.0a0
   - libopenblas >=0.3.30,<1.0a0
   constrains:
-  - liblapacke 3.9.0   39*_openblas
+  - libcblas   3.11.0   0*_openblas
+  - liblapack  3.11.0   0*_openblas
   - mkl <2026
-  - blas 2.139   openblas
-  - libcblas   3.9.0   39*_openblas
-  - liblapack  3.9.0   39*_openblas
+  - blas 2.300   openblas
+  - liblapacke 3.11.0   0*_openblas
   license: BSD-3-Clause
-  size: 17692
-  timestamp: 1763190103692
-- conda: https://conda.anaconda.org/conda-forge/osx-arm64/libcblas-3.9.0-39_hb0561ab_openblas.conda
-  build_number: 39
-  sha256: 3d289aa6f4cb26347d9c17c7b1750262a54587781210b33f2339b9c2f341ca11
-  md5: 178a35f31352f5cbe87b17cc91323380
+  size: 18757
+  timestamp: 1763419833204
+- conda: https://conda.anaconda.org/conda-forge/osx-arm64/libcblas-3.11.0-0_hb0561ab_openblas.conda
+  sha256: c746b9ac5ace8db8fafc8d62468045737d673fa6dc40af9dedff2c82ba169c72
+  md5: c1408bcd8f5ef727f0a6c48b8855ab9e
   depends:
-  - libblas 3.9.0 39_h51639a9_openblas
+  - libblas 3.11.0 0_h51639a9_openblas
   constrains:
-  - liblapacke 3.9.0   39*_openblas
-  - blas 2.139   openblas
-  - liblapack  3.9.0   39*_openblas
+  - liblapack  3.11.0   0*_openblas
+  - blas 2.300   openblas
+  - liblapacke 3.11.0   0*_openblas
   license: BSD-3-Clause
-  size: 17704
-  timestamp: 1763190119451
+  size: 18745
+  timestamp: 1763419847736
 - conda: https://conda.anaconda.org/conda-forge/osx-arm64/libcxx-21.1.5-hf598326_0.conda
   sha256: cb441b85669eec99a593f59e6bb18c1d8a46d13eebadfc6a55f0b298109bf510
   md5: fbfdbf6e554275d2661c4541f45fed53
@@ -275,19 +273,18 @@ packages:
   license_family: GPL
   size: 764028
   timestamp: 1759712189275
-- conda: https://conda.anaconda.org/conda-forge/osx-arm64/liblapack-3.9.0-39_hd9741b5_openblas.conda
-  build_number: 39
-  sha256: 64d840a3051939939099c6669a5ca79b954ecf58a0b4afc0a6b43bb02ecdc92d
-  md5: 5481bf2d967c9e27f1cd0bcaf6e282e6
+- conda: https://conda.anaconda.org/conda-forge/osx-arm64/liblapack-3.11.0-0_hd9741b5_openblas.conda
+  sha256: 047ad38d4d3ade10e1e7e126eb9b267915cb7f1bd9129191d4a20a215d5bd60c
+  md5: 6000611a37b51527e2efeab6b7ca198b
   depends:
-  - libblas 3.9.0 39_h51639a9_openblas
+  - libblas 3.11.0 0_h51639a9_openblas
   constrains:
-  - libcblas   3.9.0   39*_openblas
-  - blas 2.139   openblas
-  - liblapacke 3.9.0   39*_openblas
+  - libcblas   3.11.0   0*_openblas
+  - blas 2.300   openblas
+  - liblapacke 3.11.0   0*_openblas
   license: BSD-3-Clause
-  size: 17704
-  timestamp: 1763190134662
+  size: 18758
+  timestamp: 1763419861441
 - conda: https://conda.anaconda.org/conda-forge/osx-arm64/liblzma-5.8.1-h39f12f2_2.conda
   sha256: 0cb92a9e026e7bd4842f410a5c5c665c89b2eb97794ffddba519a626b8ce7285
   md5: d6df911d4564d77c4374b02552cb17d1
@@ -479,24 +476,23 @@ packages:
   license: X11 AND BSD-3-Clause
   size: 797030
   timestamp: 1738196177597
-- conda: https://conda.anaconda.org/conda-forge/osx-arm64/numpy-2.3.4-py313h9771d21_0.conda
-  sha256: 33c73a156ce2b48cea3a67810832b2eba830f5d0671858789518554582c9b450
-  md5: 1c27b9306edd808fdfc718c0c6c93cf9
+- conda: https://conda.anaconda.org/conda-forge/osx-arm64/numpy-2.3.5-py313h9771d21_0.conda
+  sha256: 508a9a39c4e5707bbc80c3bf5bb814b458f3948562f326d135e7707bfc052bd1
+  md5: 3f8330206033158d3e443120500af416
   depends:
   - python
-  - __osx >=11.0
   - python 3.13.* *_cp313
+  - __osx >=11.0
   - libcxx >=19
-  - python_abi 3.13.* *_cp313
-  - liblapack >=3.9.0,<4.0a0
   - libblas >=3.9.0,<4.0a0
   - libcblas >=3.9.0,<4.0a0
+  - python_abi 3.13.* *_cp313
+  - liblapack >=3.9.0,<4.0a0
   constrains:
   - numpy-base <0a0
   license: BSD-3-Clause
-  license_family: BSD
-  size: 6751745
-  timestamp: 1761161612340
+  size: 6791770
+  timestamp: 1763350918650
 - conda: https://conda.anaconda.org/conda-forge/osx-arm64/openssl-3.6.0-h5503f6c_0.conda
   sha256: ebe93dafcc09e099782fe3907485d4e1671296bc14f8c383cb6f3dfebb773988
   md5: b34dc4172653c13dcf453862f251af2b
@@ -702,7 +698,7 @@ packages:
   license: LicenseRef-Public-Domain
   size: 122968
   timestamp: 1742727099393
-- conda: git+https://github.com/lsh/wgpu-mojo#76d46e3a54aef1381050fe684fb6ff2d135a1d5c
+- conda: git+https://github.com/lsh/wgpu-mojo#fa8934b5b4497fba4aeb97f525a9b860b305513e
   name: wgpu-mojo
   version: 0.1.0
   build: h60d57d3_0

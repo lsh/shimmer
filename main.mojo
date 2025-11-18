@@ -1,7 +1,8 @@
 import wgpu
 from shimmer import App, Context, Update, Event, Frame
-from shimmer.geom import Vec3, Mat4, Camera
+from shimmer.geom import Vec2, Vec3, Mat4
 
+from builtin.device_passable import DevicePassable
 from gpu.host import DeviceContext, DeviceBuffer
 from gpu import global_idx
 from hashlib.hasher import Hasher
@@ -106,233 +107,49 @@ fn poisson_sphere_sampling_fast[
     return points^
 
 
-fn create_icosahedron() -> Tuple[List[Vec3], List[UInt32]]:
-    """
-    Create an icosahedron with vertices and faces.
-    Returns vertices (12x3 array) and faces (20x3 array of vertex indices).
-    """
-    var phi = Float32(1 + math.sqrt(5)) / 2
-
-    var vertices: List[Vec3] = [
-        {-1, phi, 0},
-        {1, phi, 0},
-        {-1, -phi, 0},
-        {1, -phi, 0},
-        {0, -1, phi},
-        {0, 1, phi},
-        {0, -1, -phi},
-        {0, 1, -phi},
-        {phi, 0, -1},
-        {phi, 0, 1},
-        {-phi, 0, -1},
-        {-phi, 0, 1},
-    ]
-
-    for ref vertex in vertices:
-        vertex /= vertex.length()
-
-    # Standard icosahedron faces with consistent CCW winding
-    var faces: List[UInt32] = [
-        # fmt: off
-        # 5 faces around point 0
-        0, 11, 5,
-        0, 5, 1,
-        0, 1, 7,
-        0, 7, 10,
-        0, 10, 11,
-        # 5 adjacent faces
-        1, 5, 9,
-        5, 11, 4,
-        11, 10, 2,
-        10, 7, 6,
-        7, 1, 8,
-        # 5 faces around point 3
-        3, 9, 4,
-        3, 4, 2,
-        3, 2, 6,
-        3, 6, 8,
-        3, 8, 9,
-        # 5 adjacent faces
-        4, 9, 5,
-        2, 4, 11,
-        6, 2, 10,
-        8, 6, 7,
-        9, 8, 1,
-        # fmt: on
-    ]
-
-    # Ensure all faces have correct winding (outward normals)
-    var flipped = 0
-    for i in range(0, len(faces), 3):
-        var v0 = vertices[Int(faces[i])]
-        var v1 = vertices[Int(faces[i + 1])]
-        var v2 = vertices[Int(faces[i + 2])]
-
-        # Compute face normal using cross product
-        var edge1 = v1 - v0
-        var edge2 = v2 - v0
-        var normal = edge1.cross(edge2)
-
-        # Face center (average of vertices)
-        var center = (v0 + v1 + v2) / 3
-
-        # For a sphere, normal should point in same direction as center (outward from origin)
-        # If dot product is negative, they point in opposite directions - flip it
-        if normal.dot(center) < 0:
-            var temp = faces[i + 1]
-            faces[i + 1] = faces[i + 2]
-            faces[i + 2] = temp
-            flipped += 1
-
-    return vertices^, faces^
-
-
 @fieldwise_init
-struct Pair(
-    Copyable, EqualityComparable, Hashable, ImplicitlyCopyable, Movable
-):
-    var first: UInt32
-    var second: UInt32
-
-    fn __hash__[H: Hasher](self, mut hasher: H):
-        hasher.update(self.first)
-        hasher.update(self.second)
-
-    fn __eq__(self, rhs: Self) -> Bool:
-        return self.first == rhs.first and self.second == rhs.second
-
-
-fn subdivide[
-    resolution: Int = 1
-](var vf: Tuple[List[Vec3], List[UInt32]]) -> Tuple[List[Vec3], List[UInt32]]:
-    """
-    Subdivide each triangular face into smaller triangles.
-
-    Parameters:
-        resolution: Number of subdivision iterations (0 = original, 1 = 4x faces, 2 = 16x faces, etc.).
-
-    Args:
-        vf: A tuple containing vertices and faces
-
-    Returns:
-        A tuple containing `new_vertices, new_faces`.
-    """
-    if resolution == 0:
-        return vf^
-
-    @parameter
-    for _ in range(resolution):
-        var new_faces: List[UInt32] = []
-        var edge_midpoints: Dict[Pair, Int] = {}
-        var vertex_list = vf[0].copy()
-
-        fn get_midpoint(
-            v1_idx: UInt32, v2_idx: UInt32
-        ) unified {mut edge_midpoints, mut vertex_list} -> UInt32:
-            """Get or create midpoint between two vertices."""
-            var edge: Pair
-            if v1_idx < v2_idx:
-                edge = Pair(v1_idx, v2_idx)
-            else:
-                edge = Pair(v2_idx, v1_idx)
-
-            if edge not in edge_midpoints:
-                # Calculate midpoint
-                var midpoint = (
-                    vertex_list[Int(v1_idx)] + vertex_list[Int(v2_idx)]
-                ) / 2
-                # Project onto unit sphere
-                midpoint = midpoint / midpoint.length()
-                # Add to vertex list
-                vertex_list.append(midpoint)
-                edge_midpoints[edge] = len(vertex_list) - 1
-
-            try:
-                return UInt32(edge_midpoints[edge])
-            except:
-                return 0
-
-        # Subdivide each face into 4 smaller triangles
-        # for face in faces:
-        for i in range(0, len(vf[1]), 3):
-            var v0 = vf[1][i + 0]
-            var v1 = vf[1][i + 1]
-            var v2 = vf[1][i + 2]
-
-            var m01 = get_midpoint(v0, v1)
-            var m12 = get_midpoint(v1, v2)
-            var m20 = get_midpoint(v2, v0)
-
-            new_faces.reserve(len(new_faces) + 12)
-            # Corner triangle at v0
-            new_faces.append(v0)
-            new_faces.append(m01)
-            new_faces.append(m20)
-
-            # Corner triangle at v1
-            new_faces.append(v1)
-            new_faces.append(m12)
-            new_faces.append(m01)
-
-            # Corner triangle at v2
-            new_faces.append(v2)
-            new_faces.append(m20)
-            new_faces.append(m12)
-
-            # Center triangle
-            new_faces.append(m01)
-            new_faces.append(m12)
-            new_faces.append(m20)
-
-        vf[0] = vertex_list^
-        vf[1] = new_faces^
-
-    for i in range(0, len(vf[1]), 3):
-        var v0 = vf[0][Int(vf[1][i])]
-        var v1 = vf[0][Int(vf[1][i + 1])]
-        var v2 = vf[0][Int(vf[1][i + 2])]
-
-        var edge1 = v1 - v0
-        var edge2 = v2 - v0
-        var normal = edge1.cross(edge2)
-        var center = (v0 + v1 + v2) / 3
-
-    return vf^
-
-
-@fieldwise_init
-struct Uniforms(Copyable, Movable):
-    var view_proj: InlineArray[InlineArray[Float32, 4], 4]
+struct Uniforms(Copyable, DevicePassable, ImplicitlyCopyable, Movable):
+    var width: Int
+    var height: Int
     var time: Float32
 
-    fn update_view_proj(mut self, camera: Camera):
-        self.view_proj = (
-            camera.build_view_projection_matrix().to_cols_array_2d()
-        )
+    alias device_type: AnyType = Self
+
+    fn _to_device_type(self, target: LegacyOpaquePointer):
+        target.bitcast[Self.device_type]()[] = self
+
+    @staticmethod
+    fn get_type_name() -> String:
+        return "Uniforms"
+
+    @staticmethod
+    fn get_device_type_name() -> String:
+        return Self.get_type_name()
+
+
+@fieldwise_init
+struct Vertex(Copyable, ImplicitlyCopyable, Movable):
+    var position: Vec3
+    var uv: Vec2
 
 
 @fieldwise_init
 struct Model(Movable):
     var device_ctx: DeviceContext
     var render_pipeline: wgpu.RenderPipeline
-    var vertices: DeviceBuffer[DType.float32]
-    var scratch: DeviceBuffer[DType.float32]
-    var normals: DeviceBuffer[DType.float32]
+    var texture_data: DeviceBuffer[DType.uint8]
     var random_offsets: DeviceBuffer[DType.float32]
     var random_offsets_original: DeviceBuffer[DType.float32]
-    var colors: DeviceBuffer[DType.float32]
-    var smoothed_colors: DeviceBuffer[DType.float32]
-    var indices: DeviceBuffer[DType.uint32]
-    var vertex_buffer: wgpu.Buffer[Float32]
-    var normal_buffer: wgpu.Buffer[Float32]
-    var color_buffer: wgpu.Buffer[Float32]
-    var index_buffer: wgpu.Buffer[UInt32]
+    var vertex_buffer: wgpu.Buffer
+    var index_buffer: wgpu.Buffer
     var num_indices: Int
-    var camera: Camera
     var uniform_bind_group: wgpu.BindGroup
-    var uniform_buffer: wgpu.Buffer[Uniforms]
+    var uniform_buffer: wgpu.Buffer
     var uniforms: Uniforms
     var random_step: List[Float32]
+    var texture: wgpu.Texture
+    var texture_view: wgpu.TextureView
+    var texture_sampler: wgpu.Sampler
 
 
 fn model(ctx: Context) raises -> Model:
@@ -344,43 +161,25 @@ fn model(ctx: Context) raises -> Model:
             # var format = Frame.TEXTURE_FORMAT
             # let sample_count = window.msaa_samples();
 
-            var vf = subdivide[4](create_icosahedron())
+            var verts: InlineArray[Vertex, 4] = [
+                Vertex({-1.0, -1.0, 0.0}, {0.0, 1.0}),  # Bottom-left
+                Vertex({1.0, -1.0, 0.0}, {1.0, 1.0}),  # Bottom-right
+                Vertex({1.0, 1.0, 0.0}, {1.0, 0.0}),  # Top-right
+                Vertex({-1.0, 1.0, 0.0}, {0.0, 0.0}),  # Top-left
+            ]
+            var faces: InlineArray[UInt32, 6] = [
+                0,
+                1,
+                2,  # First triangle (bottom-left, bottom-right, top-right)
+                0,
+                2,
+                3,  # Second triangle (bottom-left, top-right, top-left)
+            ]
 
             # Load shader modules.
-            var fs_desc = """
-            struct VertexOutput {
-                @builtin(position) clip_position: vec4<f32>,
-                @location(0) world_normal: vec3<f32>,
-                @location(1) world_position: vec3<f32>,
-                @location(2) vertex_color: vec3<f32>,
-            }
-
-            @fragment
-            fn main(in: VertexOutput) -> @location(0) vec4<f32> {
-                let normal = normalize(in.world_normal);
-                let light_dir = normalize(vec3<f32>(1.5, 1.8, 1.6));
-                let view_dir = normalize(vec3<f32>(0.0, 5.0, 2.0) - in.world_position);
-
-                // Harsher diffuse lighting with more contrast
-                let diffuse_raw = max(dot(normal, light_dir), 0.0);
-                let diffuse = pow(diffuse_raw, 2.0);  // Sharpen the falloff
-
-                // Specular lighting (Blinn-Phong) - increased for more highlights
-                let half_dir = normalize(light_dir + view_dir);
-                let specular_strength = 0.8;
-                let shininess = 64.0;  // Higher shininess for sharper highlights
-                let specular = specular_strength * pow(max(dot(normal, half_dir), 0.0), shininess);
-
-                // Lower ambient for more contrast
-                let ambient = 0.1;
-
-                let color = in.vertex_color;
-                let final_color = color * (ambient + diffuse * 1.2) + vec3<f32>(specular);
-                return vec4<f32>(final_color, 1.0);
-            }"""
             var vs_desc = """
             struct Uniforms {
-                view_proj: mat4x4<f32>,
+                time: f32,
             }
 
             @group(0) @binding(0)
@@ -388,26 +187,46 @@ fn model(ctx: Context) raises -> Model:
 
             struct VertexInput {
                 @location(0) position: vec3<f32>,
-                @location(1) normal: vec3<f32>,
-                @location(2) vertex_color: vec3<f32>,
+                @location(1) uv: vec2<f32>,
             }
 
             struct VertexOutput {
                 @builtin(position) clip_position: vec4<f32>,
-                @location(0) world_normal: vec3<f32>,
-                @location(1) world_position: vec3<f32>,
-                @location(2) vertex_color: vec3<f32>,
+                @location(0) uv: vec2<f32>,
             }
 
             @vertex
             fn main(model: VertexInput) -> VertexOutput {
                 var out: VertexOutput;
-                out.clip_position = uniforms.view_proj * vec4<f32>(model.position, 1.0);
-                // Use the pre-computed normal from the vertex buffer
-                out.world_normal = model.normal;
-                out.world_position = model.position;
-                out.vertex_color = model.vertex_color;
+                out.clip_position = vec4<f32>(model.position, 1.0);
+                out.uv = model.uv;
                 return out;
+            }
+            """
+
+            var fs_desc = """
+            struct Uniforms {
+                time: f32,
+            }
+
+            @group(0) @binding(0)
+            var<uniform> uniforms: Uniforms;
+
+            @group(0) @binding(1)
+            var t_texture: texture_2d<f32>;
+
+            @group(0) @binding(2)
+            var t_sampler: sampler;
+
+            struct VertexOutput {
+                @builtin(position) clip_position: vec4<f32>,
+                @location(0) uv: vec2<f32>,
+            }
+
+            @fragment
+            fn main(in: VertexOutput) -> @location(0) vec4<f32> {
+                var color = textureSample(t_texture, t_sampler, in.uv);
+                return color;
             }
             """
             var fs_mod = device[].create_wgsl_shader_module(code=fs_desc)
@@ -417,101 +236,38 @@ fn model(ctx: Context) raises -> Model:
             var vertex_usage = (
                 wgpu.BufferUsage.vertex | wgpu.BufferUsage.copy_dst
             )
-            var vertex_buffer = device[].create_buffer[Float32](
+            var vertex_buffer = device[].create_buffer[Vertex](
                 {
                     label = "vertex buffer",
-                    size = len(vf[0]) * 3,
+                    size = len(verts) * sys.size_of[Vertex](),
                     usage = vertex_usage,
                     mapped_at_creation = True,
                 }
             )
-            with vertex_buffer.get_mapped_range(
-                0, len(vf[0]) * 3
+            with vertex_buffer.get_mapped_range[Vertex](
+                0, len(verts) * sys.size_of[Vertex]()
             ) as vertex_host:
-                for i in range(len(vf[0])):
-                    vertex_host[i * 3 + 0] = vf[0][i].x
-                    vertex_host[i * 3 + 1] = vf[0][i].y
-                    vertex_host[i * 3 + 2] = vf[0][i].z
-
-            # Create the normal buffer (for a unit sphere, normals = positions)
-            var normal_buffer = device[].create_buffer[Float32](
-                {
-                    label = "normal buffer",
-                    size = len(vf[0]) * 3,
-                    usage = vertex_usage,
-                    mapped_at_creation = True,
-                }
-            )
-            with normal_buffer.get_mapped_range(
-                0, len(vf[0]) * 3
-            ) as normal_host:
-                for i in range(len(vf[0])):
-                    # For a unit sphere, the normal at each vertex is the normalized position
-                    var normal = vf[0][i].normalize()
-                    normal_host[i * 3 + 0] = normal.x
-                    normal_host[i * 3 + 1] = normal.y
-                    normal_host[i * 3 + 2] = normal.z
-
-            # Create the color buffer
-            var color_buffer = device[].create_buffer[Float32](
-                {
-                    label = "color buffer",
-                    size = len(vf[0]) * 3,
-                    usage = vertex_usage,
-                    mapped_at_creation = True,
-                }
-            )
-            with color_buffer.get_mapped_range(0, len(vf[0]) * 3) as color_host:
-                for i in range(len(vf[0])):
-                    # Set colors (you can customize this)
-                    color_host[i * 3 + 0] = 0.8  # R
-                    color_host[i * 3 + 1] = 0.3  # G
-                    color_host[i * 3 + 2] = 0.4  # B
+                for i in range(len(verts)):
+                    vertex_host[i] = verts[i]
 
             var vertex_attributes = [
                 wgpu.VertexAttribute(
                     format=wgpu.VertexFormat.float32x3,
                     offset=0,
                     shader_location=0,
-                )
-            ]
-
-            var normal_attributes = [
+                ),
                 wgpu.VertexAttribute(
-                    format=wgpu.VertexFormat.float32x3,
-                    offset=0,
+                    format=wgpu.VertexFormat.float32x2,
+                    offset=sys.size_of[Vec3](),
                     shader_location=1,
-                )
+                ),
             ]
 
-            var color_attributes = [
-                wgpu.VertexAttribute(
-                    format=wgpu.VertexFormat.float32x3,
-                    offset=0,
-                    shader_location=2,
-                )
-            ]
-
-            alias vbl_origin = ImmutOrigin.cast_from[
-                origin_of(
-                    vertex_attributes, normal_attributes, color_attributes
-                )
-            ]
             var vertex_buffer_layouts = [
                 wgpu.VertexBufferLayout(
-                    array_stride=sys.size_of[Float32]() * 3,
+                    array_stride=sys.size_of[Vertex](),
                     step_mode=wgpu.VertexStepMode.vertex,
                     attributes=vertex_attributes^,
-                ),
-                wgpu.VertexBufferLayout(
-                    array_stride=sys.size_of[Float32]() * 3,
-                    step_mode=wgpu.VertexStepMode.vertex,
-                    attributes=normal_attributes^,
-                ),
-                wgpu.VertexBufferLayout(
-                    array_stride=sys.size_of[Float32]() * 3,
-                    step_mode=wgpu.VertexStepMode.vertex,
-                    attributes=color_attributes^,
                 ),
             ]
 
@@ -519,14 +275,16 @@ fn model(ctx: Context) raises -> Model:
             var index_buffer = device[].create_buffer[UInt32](
                 {
                     label = "index buffer",
-                    size = len(vf[1]),
+                    size = len(faces) * sys.size_of[UInt32](),
                     usage = index_usage,
                     mapped_at_creation = True,
                 }
             )
-            with index_buffer.get_mapped_range(0, len(vf[1])) as index_host:
-                for i in range(len(vf[1])):
-                    index_host[i] = vf[1][i]
+            with index_buffer.get_mapped_range[UInt32](
+                0, len(faces) * sys.size_of[UInt32]()
+            ) as index_host:
+                for i in range(len(faces)):
+                    index_host[i] = faces[i]
 
             var bind_group_entries = [
                 wgpu.BindGroupLayoutEntry(
@@ -539,7 +297,25 @@ fn model(ctx: Context) raises -> Model:
                         min_binding_size=sys.size_of[Uniforms](),
                     ),
                     count=0,
-                )
+                ),
+                wgpu.BindGroupLayoutEntry(
+                    binding=1,
+                    visibility=wgpu.ShaderStage.fragment,
+                    type=wgpu.TextureBindingLayout(
+                        sample_type=wgpu.TextureSampleType.float,
+                        view_dimension=wgpu.TextureViewDimension.d2,
+                        multisampled=False,
+                    ),
+                    count=0,
+                ),
+                wgpu.BindGroupLayoutEntry(
+                    binding=2,
+                    visibility=wgpu.ShaderStage.fragment,
+                    type=wgpu.SamplerBindingLayout(
+                        type=wgpu.SamplerBindingType.filtering,
+                    ),
+                    count=0,
+                ),
             ]
             var bind_group_layouts: List[ArcPointer[wgpu.BindGroupLayout]] = [
                 ArcPointer(
@@ -575,7 +351,7 @@ fn model(ctx: Context) raises -> Model:
 
             var pipeline = device[].create_render_pipeline(
                 {
-                    label = "render pipeline",
+                    label = "fullscreen quad render pipeline",
                     vertex = wgpu.VertexState(
                         entry_point="main",
                         module=vs_mod,
@@ -588,32 +364,14 @@ fn model(ctx: Context) raises -> Model:
                     ),
                     primitive = wgpu.PrimitiveState(
                         topology=wgpu.PrimitiveTopology.triangle_list,
-                        cull_mode=wgpu.CullMode.back,
+                        cull_mode=wgpu.CullMode.none,  # No culling for fullscreen quad
                     ),
                     multisample = wgpu.MultisampleState(),
                     layout = Pointer(to=pipeline_layout).get_immutable(),
-                    depth_stencil = None,
+                    depth_stencil = None,  # No depth testing needed for fullscreen quad
                 }
             )
 
-            var vertices = device_ctx.enqueue_create_buffer[DType.float32](
-                len(vf[0]) * 3
-            )
-            var scratch = device_ctx.enqueue_create_buffer[DType.float32](
-                len(vf[0]) * 3
-            )
-            var normals = device_ctx.enqueue_create_buffer[DType.float32](
-                len(vf[0]) * 3
-            )
-            var colors = device_ctx.enqueue_create_buffer[DType.float32](
-                len(vf[0]) * 3
-            )
-            var smoothed_colors = device_ctx.enqueue_create_buffer[
-                DType.float32
-            ](len(vf[0]) * 3)
-            var indices = device_ctx.enqueue_create_buffer[DType.uint32](
-                len(vf[1])
-            )
             var sampled_points = poisson_sphere_sampling_fast(
                 1.0, max_points=100
             )
@@ -628,29 +386,6 @@ fn model(ctx: Context) raises -> Model:
                 Float32(random_float64(0.0, 2.0 * math.pi))
                 for _ in range(len(sampled_points))
             ]
-
-            with vertices.map_to_host() as v_host:
-                for i in range(len(vf[0])):
-                    v_host[i * 3 + 0] = vf[0][i].x
-                    v_host[i * 3 + 1] = vf[0][i].y
-                    v_host[i * 3 + 2] = vf[0][i].z
-
-            with normals.map_to_host() as n_host:
-                for i in range(len(vf[0])):
-                    var normal = vf[0][i].normalize()
-                    n_host[i * 3 + 0] = normal.x
-                    n_host[i * 3 + 1] = normal.y
-                    n_host[i * 3 + 2] = normal.z
-
-            with colors.map_to_host() as c_host:
-                for i in range(len(vf[0])):
-                    c_host[i * 3 + 0] = 0.8  # R
-                    c_host[i * 3 + 1] = 0.3  # G
-                    c_host[i * 3 + 2] = 0.4  # B
-
-            with indices.map_to_host() as i_host:
-                for i in range(len(vf[1])):
-                    i_host[i] = vf[1][i]
 
             with random_offsets.map_to_host() as r_host:
                 for i in range(len(random_offsets) // 3):
@@ -672,19 +407,118 @@ fn model(ctx: Context) raises -> Model:
                     True,
                 }
             )
-            var uniforms = Uniforms(
-                time=0, view_proj=Mat4.IDENTITY.to_cols_array_2d()
-            )
-            with uniform_buffer.get_mapped_range(0, 1) as uniform_host:
+            var width = Int(ctx.window.surface_conf.width)
+            var height = Int(ctx.window.surface_conf.height)
+            var uniforms = Uniforms(time=0, width=width, height=height)
+            with uniform_buffer.get_mapped_range[Uniforms](
+                0, sys.size_of[Uniforms]()
+            ) as uniform_host:
                 uniform_host[0] = uniforms.copy()
 
-            uniform_bind_group_entries = [
-                wgpu.BindGroupEntry[Uniforms](
-                    0,
-                    wgpu.BufferBinding[Uniforms](
-                        uniform_buffer, 0, sys.size_of[Uniforms]()
+            var texture = device[].create_texture(
+                wgpu.TextureDescriptor(
+                    label="fullscreen texture",
+                    size=wgpu.Extent3D(
+                        width=ctx.window.surface_conf.width,
+                        height=ctx.window.surface_conf.height,
+                        depth_or_array_layers=1,
+                    ),
+                    mip_level_count=1,
+                    sample_count=1,
+                    dimension=wgpu.TextureDimension.d2,
+                    format=wgpu.TextureFormat.rgba8_unorm,
+                    usage=wgpu.TextureUsage.texture_binding
+                    | wgpu.TextureUsage.copy_dst
+                    | wgpu.TextureUsage.render_attachment,
+                    view_formats=List[wgpu.TextureFormat](),
+                )
+            )
+            var texture_view = texture.create_view(
+                wgpu.TextureViewDescriptor(
+                    label="fullscreen texture view",
+                    format=wgpu.TextureFormat.rgba8_unorm,
+                    dimension=wgpu.TextureViewDimension.d2,
+                    aspect=wgpu.TextureAspect.all,
+                    base_mip_level=0,
+                    mip_level_count=1,
+                    base_array_layer=0,
+                    array_layer_count=1,
+                )
+            )
+            var texture_sampler = device[].create_sampler(
+                wgpu.SamplerDescriptor(
+                    label="fullscreen texture sampler",
+                    address_mode_u=wgpu.AddressMode.clamp_to_edge,
+                    address_mode_v=wgpu.AddressMode.clamp_to_edge,
+                    address_mode_w=wgpu.AddressMode.clamp_to_edge,
+                    mag_filter=wgpu.FilterMode.linear,
+                    min_filter=wgpu.FilterMode.linear,
+                    mipmap_filter=wgpu.MipmapFilterMode.nearest,
+                    lod_min_clamp=0.0,
+                    lod_max_clamp=32.0,
+                    compare=wgpu.CompareFunction.undefined,
+                    max_anisotropy=1,
+                )
+            )
+
+            var texture_data = device_ctx.enqueue_create_buffer[DType.uint8](
+                width * height * 4
+            )
+
+            # Run the UV texture kernel
+            alias uv_kernel = texture_kernel[origin_of(texture_data)]
+            device_ctx.enqueue_function_checked[uv_kernel, uv_kernel](
+                Span[UInt8, origin_of(texture_data)](
+                    ptr=UnsafePointer(
+                        texture_data.unsafe_ptr()
+                    ).unsafe_origin_cast[origin_of(texture_data)](),
+                    length=len(texture_data),
+                ),
+                Uniforms(width, height, 0),
+                grid_dim=width * height,
+                block_dim=1,
+            )
+
+            with texture_data.map_to_host() as texture_host:
+                ctx.window.queue[].write_texture(
+                    wgpu.ImageCopyTexture(
+                        texture=texture,
+                        mip_level=0,
+                        origin=wgpu.Origin3D(x=0, y=0, z=0),
+                        aspect=wgpu.TextureAspect.all,
+                    ),
+                    Span[UInt8, origin_of(texture_host)](
+                        ptr=UnsafePointer[UInt8, origin_of(texture_host)](
+                            texture_host.unsafe_ptr()
+                        ),
+                        length=len(texture_host),
+                    ),
+                    wgpu.TextureDataLayout(
+                        offset=0,
+                        bytes_per_row=UInt32(width * 4),
+                        rows_per_image=UInt32(height),
+                    ),
+                    wgpu.Extent3D(
+                        width=UInt32(width),
+                        height=UInt32(height),
+                        depth_or_array_layers=1,
                     ),
                 )
+
+            alias uniform_bind_group_origin = origin_of(
+                texture_view, uniform_buffer, texture_sampler
+            )
+            uniform_bind_group_entries = [
+                wgpu.BindGroupEntry[uniform_bind_group_origin](
+                    0,
+                    wgpu.BufferBinding[uniform_bind_group_origin](
+                        uniform_buffer, 0, sys.size_of[Uniforms]()
+                    ),
+                ),
+                wgpu.BindGroupEntry[uniform_bind_group_origin](1, texture_view),
+                wgpu.BindGroupEntry[uniform_bind_group_origin](
+                    2, texture_sampler
+                ),
             ]
             uniform_bind_group = device[].create_bind_group(
                 {
@@ -693,38 +527,23 @@ fn model(ctx: Context) raises -> Model:
                     uniform_bind_group_entries,
                 }
             )
-            var camera = Camera(
-                eye={0.0, 5.0, 2.0},
-                target={0.0, 0.0, 0.0},
-                up=Vec3.Y,
-                aspect=Float32(ctx.window.surface_conf.width)
-                / Float32(ctx.window.surface_conf.height),
-                fovy=45.0,
-                znear=0.1,
-                zfar=100.0,
-            )
 
             return Model(
                 device_ctx=device_ctx,
                 vertex_buffer=vertex_buffer^,
                 index_buffer=index_buffer^,
                 render_pipeline=pipeline^,
-                vertices=vertices,
-                num_indices=len(vf[1]),
-                camera=camera^,
+                num_indices=len(faces),
                 uniform_bind_group=uniform_bind_group^,
                 uniform_buffer=uniform_buffer^,
                 uniforms=uniforms^,
-                scratch=scratch^,
-                normals=normals^,
-                normal_buffer=normal_buffer^,
-                color_buffer=color_buffer^,
-                colors=colors^,
-                smoothed_colors=smoothed_colors^,
-                indices=indices^,
                 random_offsets=random_offsets^,
                 random_offsets_original=random_offsets_original^,
                 random_step=random_step^,
+                texture=texture^,
+                texture_view=texture_view^,
+                texture_sampler=texture_sampler^,
+                texture_data=texture_data^,
             )
     except:
         print("failed to create device context")
@@ -732,109 +551,121 @@ fn model(ctx: Context) raises -> Model:
             pass
 
 
-fn kernel[
-    verts_origin: ImmutOrigin,
-    offset_origin: ImmutOrigin,
-    out_origin: MutOrigin,
-    colors_origin: MutOrigin,
-](
-    verts: Span[Float32, verts_origin],
-    offsets: Span[Float32, offset_origin],
-    output: Span[Float32, out_origin],
-    colors: Span[Float32, colors_origin],
-    time: Float32,
-):
-    if Int(global_idx.x) >= len(verts) // 3:
+@always_inline
+fn rot2d(p: Vec2, a: Float32) -> Vec2:
+    var c = math.cos(a)
+    var s = math.sin(a)
+    return {p.x * c - p.y * s, p.x * s + p.y * c}
+
+
+@always_inline
+fn calc_normal[
+    df: fn (var Vec3, Uniforms) -> Float32, eps: Float32 = 0.005
+](p: Vec3, uniforms: Uniforms) -> Vec3:
+    return Vec3(
+        df(p + Vec3(eps, 0.0, 0.0), uniforms)
+        - df(p - Vec3(eps, 0.0, 0.0), uniforms),
+        df(p + Vec3(0.0, eps, 0.0), uniforms)
+        - df(p - Vec3(0.0, eps, 0.0), uniforms),
+        df(p + Vec3(0.0, 0.0, eps), uniforms)
+        - df(p - Vec3(0.0, 0.0, eps), uniforms),
+    ).normalize()
+
+
+@always_inline
+fn calc_cam(uv: Vec2, ro: Vec3, rd: Vec3, fov: Float32) -> Vec3:
+    var cu = Vec3(0.0, 1.0, 0.0).normalize()
+    var z = (cu - ro).normalize()
+    var x = cu.cross(z).normalize()
+    var y = z.cross(x)
+    return (z + fov * uv.x * x + fov * uv.y * y).normalize()
+
+
+@always_inline
+fn trace[
+    df: fn (var Vec3, Uniforms) -> Float32,
+    far: Float32 = 20.0,
+    eps: Float32 = 0.001,
+](ro: Vec3, rd: Vec3, uniforms: Uniforms) -> Float32:
+    var t = Float32(0)
+    for _ in range(250):
+        var p = ro + rd * t
+        var m = df(p, uniforms)
+        t += m * 0.75
+        if t > far or m < eps:
+            break
+    return t
+
+
+@always_inline
+fn map(var p: Vec3, uniforms: Uniforms) -> Float32:
+    var q = p
+    var p2 = rot2d({p.x, p.y}, q.z * 0.1 + uniforms.time * 0.25)
+    p = Vec3(p2.x, p2.y, p.z)
+    p = (p % 2.0) - 1.0
+    return p.length() - 0.4  # - math.clamp(uniforms.audio.y, 0.0, 0.4)
+
+
+fn main_image(uv: Vec2, uniforms: Uniforms) -> Vec3:
+    alias far = 20.0
+    var q = uv * 2.0 - 1.0
+    (UnsafePointer(to=q).bitcast[Float32]())[] *= Float32(
+        uniforms.width
+    ) / Float32(uniforms.height)
+    var ro = Vec3(0.0, 0.0, uniforms.time + 5.0)
+
+    var cv = ro + Vec3(0.0, 0.0, 4.0)
+    var rd = calc_cam(q, ro, cv, 0.4)
+    var t = trace[map, far=far](ro, rd, uniforms)
+    var p = ro + rd * t
+    var n = calc_normal[map](p, uniforms)
+    if t > far:
+        return Vec3(0.0, 0.0, 0.0)
+    alias lp = Vec3(0.0, 0.5, 0.0)
+    var ld = (lp - p).normalize()
+    var diff = n.dot(ld) * 0.5 + 0.5
+    diff *= diff
+    var color = Vec3(diff, diff, diff)
+    color = mix(color, Vec3(0.0, 0.0, 0.0), t / far)
+
+    return color
+
+
+fn texture_kernel[
+    texture_origin: MutOrigin,
+](texture_data: Span[UInt8, texture_origin], uniforms: Uniforms):
+    var idx = Int(global_idx.x)
+    if idx >= uniforms.width * uniforms.height:
         return
 
-    var pos = Vec3(
-        verts[global_idx.x * 3 + 0],
-        verts[global_idx.x * 3 + 1],
-        verts[global_idx.x * 3 + 2],
-    )
+    var x = idx % uniforms.width
+    var y = idx // uniforms.width
 
-    var min_dist = Float32.MAX
-    for i in range(len(offsets)):
-        pt = Vec3(
-            offsets[i * 3 + 0],
-            offsets[i * 3 + 1],
-            offsets[i * 3 + 2],
-        )
-        min_dist = min(min_dist, (pos - pt).length())
+    # Calculate UV coordinates (0.0 to 1.0)
+    var u = Float32(x) / Float32(uniforms.width)
+    var v = Float32(y) / Float32(uniforms.height)
+    var col = main_image({u, v}, uniforms)
 
-    colors[global_idx.x * 3 + 0] = min_dist
-    colors[global_idx.x * 3 + 1] = min_dist
-    colors[global_idx.x * 3 + 2] = min_dist
+    # Convert to RGBA (UV as RG, B=128, A=255)
+    var r = UInt8(col.x * 255.0)
+    var g = UInt8(col.y * 255.0)
+    var b = UInt8(col.z * 255.0)
+    var a = UInt8(255)
 
-    output[global_idx.x * 3 + 0] = pos.x
-    output[global_idx.x * 3 + 1] = pos.y
-    output[global_idx.x * 3 + 2] = pos.z
-
-
-fn smooth_colors_kernel[
-    colors_origin: ImmutOrigin,
-    indices_origin: ImmutOrigin,
-    smoothed_origin: MutOrigin,
-](
-    colors: Span[Float32, colors_origin],
-    indices: Span[UInt32, indices_origin],
-    smoothed: Span[Float32, smoothed_origin],
-):
-    var vertex_idx = Int(global_idx.x)
-    if vertex_idx >= len(colors) // 3:
-        return
-
-    var sum = colors[vertex_idx * 3]
-    var count = 1
-
-    # Find neighboring vertices by looking at triangles
-    for i in range(0, len(indices), 3):
-        var i0 = Int(indices[i + 0])
-        var i1 = Int(indices[i + 1])
-        var i2 = Int(indices[i + 2])
-
-        # If this triangle contains our vertex, add its other vertices
-        if i0 == vertex_idx:
-            sum += colors[i1 * 3]
-            sum += colors[i2 * 3]
-            count += 2
-        elif i1 == vertex_idx:
-            sum += colors[i0 * 3]
-            sum += colors[i2 * 3]
-            count += 2
-        elif i2 == vertex_idx:
-            sum += colors[i0 * 3]
-            sum += colors[i1 * 3]
-            count += 2
-
-    # Average the color values
-    var smoothed_color = sum / Float32(count)
-    smoothed[vertex_idx * 3 + 0] = smoothed_color
-    smoothed[vertex_idx * 3 + 1] = smoothed_color
-    smoothed[vertex_idx * 3 + 2] = smoothed_color
+    # Write to texture buffer
+    var pixel_idx = idx * 4
+    texture_data[pixel_idx + 0] = r
+    texture_data[pixel_idx + 1] = g
+    texture_data[pixel_idx + 2] = b
+    texture_data[pixel_idx + 3] = a
 
 
 fn kernel2[
     pos_origin: MutOrigin,
     colors_origin: MutOrigin,
-](
-    positions: Span[Float32, pos_origin],
-    colors: Span[Float32, colors_origin],
-    max_dist: Float32,
-    time: Float32,
-):
-    if Int(global_idx.x) >= len(colors) // 3:
-        return
-
-    # Avoid division by zero
-    var safe_max_dist = max(max_dist, 0.0001)
-    colors[global_idx.x * 3 + 0] /= safe_max_dist
-    colors[global_idx.x * 3 + 1] /= safe_max_dist
-    colors[global_idx.x * 3 + 2] /= safe_max_dist
-
-    var t = colors[global_idx.x * 3]  # Clamp to [0, 1]
-
+](positions: Span[Float32, pos_origin], max_dist: Float32, time: Float32,):
     # Multi-point gradient using mix
+    var t = max_dist
     if t < 0.1:
         color = mix(2.0, 0.424, t / 0.1)
     elif t < 0.2:
@@ -846,100 +677,64 @@ fn kernel2[
     else:
         color = mix(0.474, 0.598, (t - 0.45) / 0.55)
 
-    # Override to verify the function ran
-    if global_idx.x == 0:
-        color = 1.0  # Should make one vertex bright white
-    colors[global_idx.x * 3 + 0] = color
-    colors[global_idx.x * 3 + 1] = color
-    colors[global_idx.x * 3 + 2] = color
-
-    var pos = Vec3(
-        positions[global_idx.x * 3 + 0],
-        positions[global_idx.x * 3 + 1],
-        positions[global_idx.x * 3 + 2],
-    )
-    # Displacement based on color/distance values
-    var displacement = colors[global_idx.x * 3]
-    var scaled_pos = pos + pos * displacement
-    positions[global_idx.x * 3 + 0] = scaled_pos.x
-    positions[global_idx.x * 3 + 1] = scaled_pos.y
-    positions[global_idx.x * 3 + 2] = scaled_pos.z
-
-
-fn compute_normals_kernel[
-    pos_origin: ImmutOrigin,
-    normals_origin: MutOrigin,
-    indices_origin: ImmutOrigin,
-](
-    positions: Span[Float32, pos_origin],
-    normals: Span[Float32, normals_origin],
-    indices: Span[UInt32, indices_origin],
-):
-    var vertex_idx = Int(global_idx.x)
-    if vertex_idx >= len(positions) // 3:
-        return
-
-    var normal_sum = Vec3(0.0, 0.0, 0.0)
-    var tri_count = 0
-
-    # Find all triangles containing this vertex and average their normals
-    for i in range(0, len(indices), 3):
-        var i0 = Int(indices[i + 0])
-        var i1 = Int(indices[i + 1])
-        var i2 = Int(indices[i + 2])
-
-        if i0 == vertex_idx or i1 == vertex_idx or i2 == vertex_idx:
-            # Get the three vertices of this triangle
-            var v0 = Vec3(
-                positions[i0 * 3 + 0],
-                positions[i0 * 3 + 1],
-                positions[i0 * 3 + 2],
-            )
-            var v1 = Vec3(
-                positions[i1 * 3 + 0],
-                positions[i1 * 3 + 1],
-                positions[i1 * 3 + 2],
-            )
-            var v2 = Vec3(
-                positions[i2 * 3 + 0],
-                positions[i2 * 3 + 1],
-                positions[i2 * 3 + 2],
-            )
-
-            # Compute face normal
-            var edge1 = v1 - v0
-            var edge2 = v2 - v0
-            var face_normal = edge1.cross(edge2)
-            normal_sum = normal_sum + face_normal
-            tri_count += 1
-
-    # Average and normalize
-    var avg_normal = normal_sum / Float32(max(tri_count, 1))
-    var normal_length = avg_normal.length()
-
-    # Fallback to position-based normal if we get a degenerate result
-    var normal: Vec3
-    if normal_length < 0.001:
-        # Use the vertex position as fallback (works for spherical surfaces)
-        var pos = Vec3(
-            positions[vertex_idx * 3 + 0],
-            positions[vertex_idx * 3 + 1],
-            positions[vertex_idx * 3 + 2],
-        )
-        normal = pos.normalize()
-    else:
-        normal = avg_normal / normal_length
-
-    normals[vertex_idx * 3 + 0] = normal.x
-    normals[vertex_idx * 3 + 1] = normal.y
-    normals[vertex_idx * 3 + 2] = normal.z
-
 
 fn update(ctx: Context, mut model: Model, var update: Update) raises:
-    model.uniforms.update_view_proj(model.camera)
     model.uniforms.time = ctx.time
     var buf: InlineArray[Uniforms, 1] = [model.uniforms.copy()]
-    ctx.window.queue[].write_buffer(model.uniform_buffer, 0, buf)
+    ctx.window.queue[].write_buffer(
+        model.uniform_buffer,
+        0,
+        Span[UInt8, origin_of(buf)](
+            ptr=buf.unsafe_ptr().bitcast[UInt8](),
+            length=len(buf) * sys.size_of[Uniforms](),
+        ),
+    )
+
+    # Generate UV texture using GPU kernel
+    var width = Int(ctx.window.surface_conf.width)
+    var height = Int(ctx.window.surface_conf.height)
+
+    alias uv_kernel = texture_kernel[origin_of(model.texture_data)]
+    model.device_ctx.enqueue_function_checked[uv_kernel, uv_kernel](
+        Span[UInt8, origin_of(model.texture_data)](
+            ptr=UnsafePointer(
+                model.texture_data.unsafe_ptr()
+            ).unsafe_origin_cast[origin_of(model.texture_data)](),
+            length=len(model.texture_data),
+        ),
+        model.uniforms,
+        grid_dim=width * height,
+        block_dim=1,
+    )
+
+    # Write texture data to GPU texture
+    with model.texture_data.map_to_host() as texture_host:
+        ctx.window.queue[].write_texture(
+            wgpu.ImageCopyTexture(
+                texture=model.texture,
+                mip_level=0,
+                origin=wgpu.Origin3D(x=0, y=0, z=0),
+                aspect=wgpu.TextureAspect.all,
+            ),
+            Span[UInt8, origin_of(texture_host)](
+                ptr=UnsafePointer[UInt8, origin_of(texture_host)](
+                    texture_host.unsafe_ptr()
+                ),
+                length=len(texture_host),
+            ),
+            wgpu.TextureDataLayout(
+                offset=0,
+                bytes_per_row=UInt32(width * 4),
+                rows_per_image=UInt32(height),
+            ),
+            wgpu.Extent3D(
+                width=UInt32(width),
+                height=UInt32(height),
+                depth_or_array_layers=1,
+            ),
+        )
+
+    return  # Skip the complex displacement logic for simple triangle test
     # Rotate from original positions each frame to avoid accumulation
     with model.random_offsets_original.map_to_host() as r_orig_host:
         with model.random_offsets.map_to_host() as r_host:
@@ -965,123 +760,36 @@ fn update(ctx: Context, mut model: Model, var update: Update) raises:
                     1.0 + 0.5 * math.cos(ctx.time + model.random_step[i])
                 )
 
-    alias k = kernel[
-        origin_of(model.vertices),
-        origin_of(model.random_offsets),
-        origin_of(model.scratch),
-        origin_of(model.colors),
-    ]
-    model.device_ctx.enqueue_function_checked[k, k](
-        Span[Float32, origin_of(model.vertices)](
-            ptr=UnsafePointer(model.vertices.unsafe_ptr()).unsafe_origin_cast[
-                origin_of(model.vertices)
-            ](),
-            length=len(model.vertices),
-        ).get_immutable(),
-        Span[Float32, origin_of(model.random_offsets)](
-            ptr=UnsafePointer(
-                model.random_offsets.unsafe_ptr()
-            ).unsafe_origin_cast[origin_of(model.random_offsets)](),
-            length=len(model.random_offsets),
-        ).get_immutable(),
-        Span[Float32, origin_of(model.scratch)](
-            ptr=UnsafePointer(model.scratch.unsafe_ptr()).unsafe_origin_cast[
-                origin_of(model.scratch)
-            ](),
-            length=len(model.scratch),
-        ),
-        Span[Float32, origin_of(model.colors)](
-            ptr=UnsafePointer(model.colors.unsafe_ptr()).unsafe_origin_cast[
-                origin_of(model.colors)
-            ](),
-            length=len(model.colors),
-        ),
-        ctx.time,
-        grid_dim=len(model.vertices) // 3,
-        block_dim=1,
-    )
-
-    var max_dist = Float32.MIN
-    with model.colors.map_to_host() as colors_host:
-        for i in range(len(model.colors) // 3):
-            max_dist = max(colors_host[i * 3 + 0], max_dist)
-
-    # Ensure max_dist is never zero to avoid division by zero
-    max_dist = max(max_dist, 0.0001)
-
-    # Apply gradient and normalization directly to colors (skip smoothing for performance)
-    alias k2 = kernel2[
-        origin_of(model.scratch),
-        origin_of(model.colors),
-    ]
-    model.device_ctx.enqueue_function_checked[k2, k2](
-        Span[Float32, origin_of(model.scratch)](
-            ptr=UnsafePointer(model.scratch.unsafe_ptr()).unsafe_origin_cast[
-                origin_of(model.scratch)
-            ](),
-            length=len(model.scratch),
-        ),
-        Span[Float32, origin_of(model.colors)](
-            ptr=UnsafePointer(model.colors.unsafe_ptr()).unsafe_origin_cast[
-                origin_of(model.colors)
-            ](),
-            length=len(model.colors),
-        ),
-        max_dist,
-        ctx.time,
-        grid_dim=len(model.vertices) // 3,
-        block_dim=1,
-    )
-
-    # Compute normals from displaced geometry
-    alias k_normals = compute_normals_kernel[
-        origin_of(model.scratch),
-        origin_of(model.normals),
-        origin_of(model.indices),
-    ]
-    model.device_ctx.enqueue_function_checked[k_normals, k_normals](
-        Span[Float32, origin_of(model.scratch)](
-            ptr=UnsafePointer(model.scratch.unsafe_ptr()).unsafe_origin_cast[
-                origin_of(model.scratch)
-            ](),
-            length=len(model.scratch),
-        ).get_immutable(),
-        Span[Float32, origin_of(model.normals)](
-            ptr=UnsafePointer(model.normals.unsafe_ptr()).unsafe_origin_cast[
-                origin_of(model.normals)
-            ](),
-            length=len(model.normals),
-        ),
-        Span[UInt32, origin_of(model.indices)](
-            ptr=UnsafePointer(model.indices.unsafe_ptr()).unsafe_origin_cast[
-                origin_of(model.indices)
-            ](),
-            length=len(model.indices),
-        ).get_immutable(),
-        grid_dim=len(model.vertices) // 3,
-        block_dim=1,
-    )
-
-    with model.colors.map_to_host() as colors_host:
-        ctx.window.queue[].write_buffer(
-            model.color_buffer,
-            0,
-            colors_host.as_span(),
-        )
-
-    with model.scratch.map_to_host() as vertex_host:
-        ctx.window.queue[].write_buffer(
-            model.vertex_buffer,
-            0,
-            vertex_host.as_span(),
-        )
-
-    with model.normals.map_to_host() as normals_host:
-        ctx.window.queue[].write_buffer(
-            model.normal_buffer,
-            0,
-            normals_host.as_span(),
-        )
+    # alias k = kernel[origin_of(model.random_offsets),]
+    # model.device_ctx.enqueue_function_checked[k, k](
+    #     Span[Float32, origin_of(model.vertices)](
+    #         ptr=UnsafePointer(model.vertices.unsafe_ptr()).unsafe_origin_cast[
+    #             origin_of(model.vertices)
+    #         ](),
+    #         length=len(model.vertices),
+    #     ).get_immutable(),
+    #     Span[Float32, origin_of(model.random_offsets)](
+    #         ptr=UnsafePointer(
+    #             model.random_offsets.unsafe_ptr()
+    #         ).unsafe_origin_cast[origin_of(model.random_offsets)](),
+    #         length=len(model.random_offsets),
+    #     ).get_immutable(),
+    #     Span[Float32, origin_of(model.scratch)](
+    #         ptr=UnsafePointer(model.scratch.unsafe_ptr()).unsafe_origin_cast[
+    #             origin_of(model.scratch)
+    #         ](),
+    #         length=len(model.scratch),
+    #     ),
+    #     Span[Float32, origin_of(model.colors)](
+    #         ptr=UnsafePointer(model.colors.unsafe_ptr()).unsafe_origin_cast[
+    #             origin_of(model.colors)
+    #         ](),
+    #         length=len(model.colors),
+    #     ),
+    #     ctx.time,
+    #     grid_dim=len(model.vertices) // 3,
+    #     block_dim=1,
+    # )
 
 
 fn event(ctx: Context, mut model: Model, var event: Event) raises:
@@ -1105,8 +813,6 @@ fn view(ctx: Context, model: Model, var frame: Frame) raises:
     var rp = encoder.begin_render_pass({color_attachments = color_attachments^})
     rp.set_pipeline(model.render_pipeline)
     rp.set_vertex_buffer(0, 0, model.vertex_buffer.size(), model.vertex_buffer)
-    rp.set_vertex_buffer(1, 0, model.normal_buffer.size(), model.normal_buffer)
-    rp.set_vertex_buffer(2, 0, model.color_buffer.size(), model.color_buffer)
     rp.set_index_buffer(
         model.index_buffer,
         wgpu.IndexFormat.uint32,
