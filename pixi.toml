@@ -12,10 +12,21 @@ description = "A creative coding framework for Mojo"
 [package.build]
 backend = { name = "pixi-build-rattler-build", version = "*" }
 
+[package.host-dependencies]
+ffipointer = { path = "packages/ffipointer" }
+wgpu-mojo = { path = "packages/wgpu" }
+glfw-mojo = { path = "packages/glfw" }
+portaudio-mojo = { path = "packages/portaudio" }
+kissfft-mojo = { path = "packages/kissfft" }
+
 [dependencies]
 mojo = ">=0.25.7.0.dev2025110305,<0.26"
 max = ">=25.7.0.dev2025110305,<26"
-wgpu-mojo = { git = "https://github.com/lsh/wgpu-mojo" }
+ffipointer = { path = "packages/ffipointer" }
+wgpu-mojo = { path = "packages/wgpu" }
+glfw-mojo = { path = "packages/glfw" }
+portaudio-mojo = { path = "packages/portaudio" }
+kissfft-mojo = { path = "packages/kissfft" }
 glfw = ">=3.4,<4"
 wgpu-native = ">=22.1.0,<23"
 
@@ -23,8 +34,7 @@ wgpu-native = ">=22.1.0,<23"
 setup = { cmd = "mkdir -p build" }
 build = { cmd = "bash fix_dylib.sh", depends-on = ["setup"] }
 exec = { cmd = "./build/main", depends-on = ["build"] }
-# Quick build without fixing library paths (for development)
-quick-build = { cmd = "mojo build main.mojo" }
+gen = { cmd = "cd packages/wgpu && python gen_c.py webgpu.json && mojo format wgpu" }
 
 [activation.env]
 MODULAR_MOJO_MAX_SYSTEM_LIBS = "-lm,-L.pixi/envs/default/lib/,-lglfw,-lwgpu_native"

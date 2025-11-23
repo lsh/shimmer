@@ -1,0 +1,6008 @@
+{
+    "copyright": "Copyright 2019-2023 WebGPU-Native developers\n\nSPDX-License-Identifier: BSD-3-Clause\n",
+    "name": "webgpu",
+    "enum_prefix": "0x0000",
+    "constants": [
+        {
+            "name": "array_layer_count_undefined",
+            "value": "uint32_max",
+            "doc": "TODO\n"
+        },
+        {
+            "name": "copy_stride_undefined",
+            "value": "uint32_max",
+            "doc": "TODO\n"
+        },
+        {
+            "name": "depth_slice_undefined",
+            "value": "uint32_max",
+            "doc": "TODO\n"
+        },
+        {
+            "name": "limit_u32_undefined",
+            "value": "uint32_max",
+            "doc": "TODO\n"
+        },
+        {
+            "name": "limit_u64_undefined",
+            "value": "uint64_max",
+            "doc": "TODO\n"
+        },
+        {
+            "name": "mip_level_count_undefined",
+            "value": "uint32_max",
+            "doc": "TODO\n"
+        },
+        {
+            "name": "query_set_index_undefined",
+            "value": "uint32_max",
+            "doc": "TODO\n"
+        },
+        {
+            "name": "whole_map_size",
+            "value": "usize_max",
+            "doc": "TODO\n"
+        },
+        {
+            "name": "whole_size",
+            "value": "uint64_max",
+            "doc": "TODO\n"
+        }
+    ],
+    "typedefs": [],
+    "enums": [
+        {
+            "name": "request_adapter_status",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "success",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "unavailable",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "error",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "unknown",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "adapter_type",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "discrete_GPU",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "integrated_GPU",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "CPU",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "unknown",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "address_mode",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "repeat",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "mirror_repeat",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "clamp_to_edge",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "backend_type",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "undefined",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "null",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "WebGPU",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "D3D11",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "D3D12",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "metal",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "vulkan",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "openGL",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "openGLES",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "buffer_binding_type",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "undefined",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "uniform",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "storage",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "read_only_storage",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "sampler_binding_type",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "undefined",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "filtering",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "non_filtering",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "comparison",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "texture_sample_type",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "undefined",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "float",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "unfilterable_float",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "depth",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "sint",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "uint",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "storage_texture_access",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "undefined",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "write_only",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "read_only",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "read_write",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "blend_factor",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "zero",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "one",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "src",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "one_minus_src",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "src_alpha",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "one_minus_src_alpha",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "dst",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "one_minus_dst",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "dst_alpha",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "one_minus_dst_alpha",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "src_alpha_saturated",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "constant",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "one_minus_constant",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "blend_operation",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "add",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "subtract",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "reverse_subtract",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "min",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "max",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "buffer_map_async_status",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "success",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "validation_error",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "unknown",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "device_lost",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "destroyed_before_callback",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "unmapped_before_callback",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "mapping_already_pending",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "offset_out_of_range",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "size_out_of_range",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "buffer_map_state",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "unmapped",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "pending",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "mapped",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "compare_function",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "undefined",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "never",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "less",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "less_equal",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "greater",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "greater_equal",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "equal",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "not_equal",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "always",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "compilation_info_request_status",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "success",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "error",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "device_lost",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "unknown",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "compilation_message_type",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "error",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "warning",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "info",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "composite_alpha_mode",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "auto",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "opaque",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "premultiplied",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "unpremultiplied",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "inherit",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "create_pipeline_async_status",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "success",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "validation_error",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "internal_error",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "device_lost",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "device_destroyed",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "unknown",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "cull_mode",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "none",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "front",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "back",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "device_lost_reason",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "unknown",
+                    "value": 1,
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "destroyed",
+                    "value": 2,
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "error_filter",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "validation",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "out_of_memory",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "internal",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "error_type",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "no_error",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "validation",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "out_of_memory",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "internal",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "unknown",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "device_lost",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "feature_name",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "undefined",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "depth_clip_control",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "depth32_float_stencil8",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "timestamp_query",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "texture_compression_BC",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "texture_compression_ETC2",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "texture_compression_ASTC",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "indirect_first_instance",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "shader_f16",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "RG11B10_ufloat_renderable",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "BGRA8_unorm_storage",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "float32_filterable",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "filter_mode",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "nearest",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "linear",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "front_face",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "CCW",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "CW",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "index_format",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "undefined",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "uint16",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "uint32",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "vertex_step_mode",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "vertex",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "instance",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "vertex_buffer_not_used",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "load_op",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "undefined",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "clear",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "load",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "mipmap_filter_mode",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "nearest",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "linear",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "store_op",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "undefined",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "store",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "discard",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "power_preference",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "undefined",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "low_power",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "high_performance",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "present_mode",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "fifo",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "fifo_relaxed",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "immediate",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "mailbox",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "primitive_topology",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "point_list",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "line_list",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "line_strip",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "triangle_list",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "triangle_strip",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "query_type",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "occlusion",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "timestamp",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "queue_work_done_status",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "success",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "error",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "unknown",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "device_lost",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "request_device_status",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "success",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "error",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "unknown",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "stencil_operation",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "keep",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "zero",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "replace",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "invert",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "increment_clamp",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "decrement_clamp",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "increment_wrap",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "decrement_wrap",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "s_type",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "invalid",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "surface_descriptor_from_metal_layer",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "surface_descriptor_from_windows_HWND",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "surface_descriptor_from_xlib_window",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "surface_descriptor_from_canvas_HTML_selector",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "shader_module_SPIRV_descriptor",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "shader_module_WGSL_descriptor",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "primitive_depth_clip_control",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "surface_descriptor_from_wayland_surface",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "surface_descriptor_from_android_native_window",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "surface_descriptor_from_xcb_window",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "render_pass_descriptor_max_draw_count",
+                    "value": 15,
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "surface_get_current_texture_status",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "success",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "timeout",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "outdated",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "lost",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "out_of_memory",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "device_lost",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "texture_aspect",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "all",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "stencil_only",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "depth_only",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "texture_dimension",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "1D",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "2D",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "3D",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "texture_format",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "undefined",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "R8_unorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "R8_snorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "R8_uint",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "R8_sint",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "R16_uint",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "R16_sint",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "R16_float",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "RG8_unorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "RG8_snorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "RG8_uint",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "RG8_sint",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "R32_float",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "R32_uint",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "R32_sint",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "RG16_uint",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "RG16_sint",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "RG16_float",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "RGBA8_unorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "RGBA8_unorm_srgb",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "RGBA8_snorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "RGBA8_uint",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "RGBA8_sint",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "BGRA8_unorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "BGRA8_unorm_srgb",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "RGB10_A2_uint",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "RGB10_A2_unorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "RG11_B10_ufloat",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "RGB9_E5_ufloat",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "RG32_float",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "RG32_uint",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "RG32_sint",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "RGBA16_uint",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "RGBA16_sint",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "RGBA16_float",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "RGBA32_float",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "RGBA32_uint",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "RGBA32_sint",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "stencil8",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "depth16_unorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "depth24_plus",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "depth24_plus_stencil8",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "depth32_float",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "depth32_float_stencil8",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "BC1_RGBA_unorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "BC1_RGBA_unorm_srgb",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "BC2_RGBA_unorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "BC2_RGBA_unorm_srgb",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "BC3_RGBA_unorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "BC3_RGBA_unorm_srgb",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "BC4_R_unorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "BC4_R_snorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "BC5_RG_unorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "BC5_RG_snorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "BC6H_RGB_ufloat",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "BC6H_RGB_float",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "BC7_RGBA_unorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "BC7_RGBA_unorm_srgb",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "ETC2_RGB8_unorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "ETC2_RGB8_unorm_srgb",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "ETC2_RGB8A1_unorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "ETC2_RGB8A1_unorm_srgb",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "ETC2_RGBA8_unorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "ETC2_RGBA8_unorm_srgb",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "EAC_R11_unorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "EAC_R11_snorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "EAC_RG11_unorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "EAC_RG11_snorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "ASTC_4x4_unorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "ASTC_4x4_unorm_srgb",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "ASTC_5x4_unorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "ASTC_5x4_unorm_srgb",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "ASTC_5x5_unorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "ASTC_5x5_unorm_srgb",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "ASTC_6x5_unorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "ASTC_6x5_unorm_srgb",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "ASTC_6x6_unorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "ASTC_6x6_unorm_srgb",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "ASTC_8x5_unorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "ASTC_8x5_unorm_srgb",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "ASTC_8x6_unorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "ASTC_8x6_unorm_srgb",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "ASTC_8x8_unorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "ASTC_8x8_unorm_srgb",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "ASTC_10x5_unorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "ASTC_10x5_unorm_srgb",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "ASTC_10x6_unorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "ASTC_10x6_unorm_srgb",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "ASTC_10x8_unorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "ASTC_10x8_unorm_srgb",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "ASTC_10x10_unorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "ASTC_10x10_unorm_srgb",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "ASTC_12x10_unorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "ASTC_12x10_unorm_srgb",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "ASTC_12x12_unorm",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "ASTC_12x12_unorm_srgb",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "texture_view_dimension",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "undefined",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "1D",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "2D",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "2D_array",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "cube",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "cube_array",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "3D",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "vertex_format",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "undefined",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "uint8x2",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "uint8x4",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "sint8x2",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "sint8x4",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "unorm8x2",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "unorm8x4",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "snorm8x2",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "snorm8x4",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "uint16x2",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "uint16x4",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "sint16x2",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "sint16x4",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "unorm16x2",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "unorm16x4",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "snorm16x2",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "snorm16x4",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "float16x2",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "float16x4",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "float32",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "float32x2",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "float32x3",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "float32x4",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "uint32",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "uint32x2",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "uint32x3",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "uint32x4",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "sint32",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "sint32x2",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "sint32x3",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "sint32x4",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "WGSL_feature_name",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "undefined",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "readonly_and_readwrite_storage_textures",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "packed4x8_integer_dot_product",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "unrestricted_pointer_parameters",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "pointer_composite_access",
+                    "doc": "TODO\n"
+                }
+            ]
+        }
+    ],
+    "bitflags": [
+        {
+            "name": "buffer_usage",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "none",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "map_read",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "map_write",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "copy_src",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "copy_dst",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "index",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "vertex",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "uniform",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "storage",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "indirect",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "query_resolve",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "color_write_mask",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "none",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "red",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "green",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "blue",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "alpha",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "all",
+                    "value_combination": [
+                        "none",
+                        "red",
+                        "green",
+                        "blue",
+                        "alpha"
+                    ],
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "map_mode",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "none",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "read",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "write",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "shader_stage",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "none",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "vertex",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "fragment",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "compute",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "texture_usage",
+            "doc": "TODO\n",
+            "entries": [
+                {
+                    "name": "none",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "copy_src",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "copy_dst",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "texture_binding",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "storage_binding",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "render_attachment",
+                    "doc": "TODO\n"
+                }
+            ]
+        }
+    ],
+    "function_types": [
+        {
+            "name": "device_lost_callback",
+            "doc": "TODO\n",
+            "args": [
+                {
+                    "name": "reason",
+                    "doc": "TODO\n",
+                    "type": "enum.device_lost_reason"
+                },
+                {
+                    "name": "message",
+                    "doc": "TODO\n",
+                    "type": "string"
+                },
+                {
+                    "name": "userdata",
+                    "doc": "TODO\n",
+                    "type": "c_void",
+                    "pointer": "mutable"
+                }
+            ]
+        },
+        {
+            "name": "error_callback",
+            "doc": "TODO\n",
+            "args": [
+                {
+                    "name": "type",
+                    "doc": "TODO\n",
+                    "type": "enum.error_type"
+                },
+                {
+                    "name": "message",
+                    "doc": "TODO\n",
+                    "type": "string"
+                },
+                {
+                    "name": "userdata",
+                    "doc": "TODO\n",
+                    "type": "c_void",
+                    "pointer": "mutable"
+                }
+            ]
+        }
+    ],
+    "structs": [
+        {
+            "name": "request_adapter_options",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "compatible_surface",
+                    "doc": "TODO\n",
+                    "type": "object.surface",
+                    "optional": true
+                },
+                {
+                    "name": "power_preference",
+                    "doc": "TODO\n",
+                    "type": "enum.power_preference"
+                },
+                {
+                    "name": "backend_type",
+                    "doc": "TODO\n",
+                    "type": "enum.backend_type"
+                },
+                {
+                    "name": "force_fallback_adapter",
+                    "doc": "TODO\n",
+                    "type": "bool"
+                }
+            ]
+        },
+        {
+            "name": "adapter_info",
+            "doc": "TODO\n",
+            "type": "base_out",
+            "free_members": true,
+            "members": [
+                {
+                    "name": "vendor",
+                    "doc": "TODO\n",
+                    "type": "string"
+                },
+                {
+                    "name": "architecture",
+                    "doc": "TODO\n",
+                    "type": "string"
+                },
+                {
+                    "name": "device",
+                    "doc": "TODO\n",
+                    "type": "string"
+                },
+                {
+                    "name": "description",
+                    "doc": "TODO\n",
+                    "type": "string"
+                },
+                {
+                    "name": "backend_type",
+                    "doc": "TODO\n",
+                    "type": "enum.backend_type"
+                },
+                {
+                    "name": "adapter_type",
+                    "doc": "TODO\n",
+                    "type": "enum.adapter_type"
+                },
+                {
+                    "name": "vendor_ID",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "device_ID",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
+            "name": "device_descriptor",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "label",
+                    "doc": "TODO\n",
+                    "type": "string",
+                    "optional": true
+                },
+                {
+                    "name": "required_features",
+                    "doc": "TODO\n",
+                    "type": "array<enum.feature_name>",
+                    "pointer": "immutable"
+                },
+                {
+                    "name": "required_limits",
+                    "doc": "TODO\n",
+                    "type": "struct.required_limits",
+                    "pointer": "immutable",
+                    "optional": true
+                },
+                {
+                    "name": "default_queue",
+                    "doc": "TODO\n",
+                    "type": "struct.queue_descriptor"
+                },
+                {
+                    "name": "device_lost_callback",
+                    "doc": "TODO\n",
+                    "type": "function_type.device_lost_callback"
+                },
+                {
+                    "name": "device_lost_userdata",
+                    "doc": "TODO\n",
+                    "type": "c_void",
+                    "pointer": "mutable"
+                },
+                {
+                    "name": "uncaptured_error_callback_info",
+                    "doc": "TODO\n",
+                    "type": "function_type.uncaptured_error_callback_info"
+                }
+            ]
+        },
+        {
+            "name": "bind_group_entry",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "binding",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "buffer",
+                    "doc": "TODO\n",
+                    "type": "object.buffer",
+                    "optional": true
+                },
+                {
+                    "name": "offset",
+                    "doc": "TODO\n",
+                    "type": "uint64"
+                },
+                {
+                    "name": "size",
+                    "doc": "TODO\n",
+                    "type": "uint64"
+                },
+                {
+                    "name": "sampler",
+                    "doc": "TODO\n",
+                    "type": "object.sampler",
+                    "optional": true
+                },
+                {
+                    "name": "texture_view",
+                    "doc": "TODO\n",
+                    "type": "object.texture_view",
+                    "optional": true
+                }
+            ]
+        },
+        {
+            "name": "bind_group_descriptor",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "label",
+                    "doc": "TODO\n",
+                    "type": "string",
+                    "optional": true
+                },
+                {
+                    "name": "layout",
+                    "doc": "TODO\n",
+                    "type": "object.bind_group_layout"
+                },
+                {
+                    "name": "entries",
+                    "doc": "TODO\n",
+                    "type": "array<struct.bind_group_entry>",
+                    "pointer": "immutable"
+                }
+            ]
+        },
+        {
+            "name": "buffer_binding_layout",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "type",
+                    "doc": "TODO\n",
+                    "type": "enum.buffer_binding_type"
+                },
+                {
+                    "name": "has_dynamic_offset",
+                    "doc": "TODO\n",
+                    "type": "bool"
+                },
+                {
+                    "name": "min_binding_size",
+                    "doc": "TODO\n",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
+            "name": "sampler_binding_layout",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "type",
+                    "doc": "TODO\n",
+                    "type": "enum.sampler_binding_type"
+                }
+            ]
+        },
+        {
+            "name": "texture_binding_layout",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "sample_type",
+                    "doc": "TODO\n",
+                    "type": "enum.texture_sample_type"
+                },
+                {
+                    "name": "view_dimension",
+                    "doc": "TODO\n",
+                    "type": "enum.texture_view_dimension"
+                },
+                {
+                    "name": "multisampled",
+                    "doc": "TODO\n",
+                    "type": "bool"
+                }
+            ]
+        },
+        {
+            "name": "surface_capabilities",
+            "doc": "TODO\n",
+            "type": "base_out",
+            "free_members": true,
+            "members": [
+                {
+                    "name": "usages",
+                    "doc": "TODO\n",
+                    "type": "bitflag.texture_usage"
+                },
+                {
+                    "name": "formats",
+                    "doc": "TODO\n",
+                    "type": "array<enum.texture_format>",
+                    "pointer": "immutable"
+                },
+                {
+                    "name": "present_modes",
+                    "doc": "TODO\n",
+                    "type": "array<enum.present_mode>",
+                    "pointer": "immutable"
+                },
+                {
+                    "name": "alpha_modes",
+                    "doc": "TODO\n",
+                    "type": "array<enum.composite_alpha_mode>",
+                    "pointer": "immutable"
+                }
+            ]
+        },
+        {
+            "name": "surface_configuration",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "device",
+                    "doc": "TODO\n",
+                    "type": "object.device"
+                },
+                {
+                    "name": "format",
+                    "doc": "TODO\n",
+                    "type": "enum.texture_format"
+                },
+                {
+                    "name": "usage",
+                    "doc": "TODO\n",
+                    "type": "bitflag.texture_usage"
+                },
+                {
+                    "name": "view_formats",
+                    "doc": "TODO\n",
+                    "type": "array<enum.texture_format>",
+                    "pointer": "immutable"
+                },
+                {
+                    "name": "alpha_mode",
+                    "doc": "TODO\n",
+                    "type": "enum.composite_alpha_mode"
+                },
+                {
+                    "name": "width",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "height",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "present_mode",
+                    "doc": "TODO\n",
+                    "type": "enum.present_mode"
+                }
+            ]
+        },
+        {
+            "name": "storage_texture_binding_layout",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "access",
+                    "doc": "TODO\n",
+                    "type": "enum.storage_texture_access"
+                },
+                {
+                    "name": "format",
+                    "doc": "TODO\n",
+                    "type": "enum.texture_format"
+                },
+                {
+                    "name": "view_dimension",
+                    "doc": "TODO\n",
+                    "type": "enum.texture_view_dimension"
+                }
+            ]
+        },
+        {
+            "name": "bind_group_layout_entry",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "binding",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "visibility",
+                    "doc": "TODO\n",
+                    "type": "bitflag.shader_stage"
+                },
+                {
+                    "name": "buffer",
+                    "doc": "TODO\n",
+                    "type": "struct.buffer_binding_layout"
+                },
+                {
+                    "name": "sampler",
+                    "doc": "TODO\n",
+                    "type": "struct.sampler_binding_layout"
+                },
+                {
+                    "name": "texture",
+                    "doc": "TODO\n",
+                    "type": "struct.texture_binding_layout"
+                },
+                {
+                    "name": "storage_texture",
+                    "doc": "TODO\n",
+                    "type": "struct.storage_texture_binding_layout"
+                }
+            ]
+        },
+        {
+            "name": "bind_group_layout_descriptor",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "label",
+                    "doc": "TODO\n",
+                    "type": "string",
+                    "optional": true
+                },
+                {
+                    "name": "entries",
+                    "doc": "TODO\n",
+                    "type": "array<struct.bind_group_layout_entry>",
+                    "pointer": "immutable"
+                }
+            ]
+        },
+        {
+            "name": "blend_component",
+            "doc": "TODO\n",
+            "type": "standalone",
+            "members": [
+                {
+                    "name": "operation",
+                    "doc": "TODO\n",
+                    "type": "enum.blend_operation"
+                },
+                {
+                    "name": "src_factor",
+                    "doc": "TODO\n",
+                    "type": "enum.blend_factor"
+                },
+                {
+                    "name": "dst_factor",
+                    "doc": "TODO\n",
+                    "type": "enum.blend_factor"
+                }
+            ]
+        },
+        {
+            "name": "buffer_descriptor",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "label",
+                    "doc": "TODO\n",
+                    "type": "string",
+                    "optional": true
+                },
+                {
+                    "name": "usage",
+                    "doc": "TODO\n",
+                    "type": "bitflag.buffer_usage"
+                },
+                {
+                    "name": "size",
+                    "doc": "TODO\n",
+                    "type": "uint64"
+                },
+                {
+                    "name": "mapped_at_creation",
+                    "doc": "TODO\n",
+                    "type": "bool"
+                }
+            ]
+        },
+        {
+            "name": "color",
+            "doc": "TODO\n",
+            "type": "standalone",
+            "members": [
+                {
+                    "name": "r",
+                    "doc": "TODO\n",
+                    "type": "float64"
+                },
+                {
+                    "name": "g",
+                    "doc": "TODO\n",
+                    "type": "float64"
+                },
+                {
+                    "name": "b",
+                    "doc": "TODO\n",
+                    "type": "float64"
+                },
+                {
+                    "name": "a",
+                    "doc": "TODO\n",
+                    "type": "float64"
+                }
+            ]
+        },
+        {
+            "name": "constant_entry",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "key",
+                    "doc": "TODO\n",
+                    "type": "string"
+                },
+                {
+                    "name": "value",
+                    "doc": "TODO\n",
+                    "type": "float64"
+                }
+            ]
+        },
+        {
+            "name": "command_buffer_descriptor",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "label",
+                    "doc": "TODO\n",
+                    "type": "string",
+                    "optional": true
+                }
+            ]
+        },
+        {
+            "name": "command_encoder_descriptor",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "label",
+                    "doc": "TODO\n",
+                    "type": "string",
+                    "optional": true
+                }
+            ]
+        },
+        {
+            "name": "compilation_info",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "messages",
+                    "doc": "TODO\n",
+                    "type": "array<struct.compilation_message>",
+                    "pointer": "immutable"
+                }
+            ]
+        },
+        {
+            "name": "compilation_message",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "message",
+                    "doc": "TODO\n",
+                    "type": "string",
+                    "optional": true
+                },
+                {
+                    "name": "type",
+                    "doc": "TODO\n",
+                    "type": "enum.compilation_message_type"
+                },
+                {
+                    "name": "line_num",
+                    "doc": "TODO\n",
+                    "type": "uint64"
+                },
+                {
+                    "name": "line_pos",
+                    "doc": "TODO\n",
+                    "type": "uint64"
+                },
+                {
+                    "name": "offset",
+                    "doc": "TODO\n",
+                    "type": "uint64"
+                },
+                {
+                    "name": "length",
+                    "doc": "TODO\n",
+                    "type": "uint64"
+                },
+                {
+                    "name": "utf16_line_pos",
+                    "doc": "TODO\n",
+                    "type": "uint64"
+                },
+                {
+                    "name": "utf16_offset",
+                    "doc": "TODO\n",
+                    "type": "uint64"
+                },
+                {
+                    "name": "utf16_length",
+                    "doc": "TODO\n",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
+            "name": "compute_pass_descriptor",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "label",
+                    "doc": "TODO\n",
+                    "type": "string",
+                    "optional": true
+                },
+                {
+                    "name": "timestamp_writes",
+                    "doc": "TODO\n",
+                    "type": "struct.compute_pass_timestamp_writes",
+                    "pointer": "immutable",
+                    "optional": true
+                }
+            ]
+        },
+        {
+            "name": "compute_pass_timestamp_writes",
+            "doc": "TODO\n",
+            "type": "standalone",
+            "members": [
+                {
+                    "name": "query_set",
+                    "doc": "TODO\n",
+                    "type": "object.query_set"
+                },
+                {
+                    "name": "beginning_of_pass_write_index",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "end_of_pass_write_index",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
+            "name": "compute_pipeline_descriptor",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "label",
+                    "doc": "TODO\n",
+                    "type": "string",
+                    "optional": true
+                },
+                {
+                    "name": "layout",
+                    "doc": "TODO\n",
+                    "type": "object.pipeline_layout",
+                    "optional": true
+                },
+                {
+                    "name": "compute",
+                    "doc": "TODO\n",
+                    "type": "struct.programmable_stage_descriptor"
+                }
+            ]
+        },
+        {
+            "name": "limits",
+            "doc": "TODO\n",
+            "type": "standalone",
+            "members": [
+                {
+                    "name": "max_texture_dimension_1D",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "max_texture_dimension_2D",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "max_texture_dimension_3D",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "max_texture_array_layers",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "max_bind_groups",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "max_bind_groups_plus_vertex_buffers",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "max_bindings_per_bind_group",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "max_dynamic_uniform_buffers_per_pipeline_layout",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "max_dynamic_storage_buffers_per_pipeline_layout",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "max_sampled_textures_per_shader_stage",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "max_samplers_per_shader_stage",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "max_storage_buffers_per_shader_stage",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "max_storage_textures_per_shader_stage",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "max_uniform_buffers_per_shader_stage",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "max_uniform_buffer_binding_size",
+                    "doc": "TODO\n",
+                    "type": "uint64"
+                },
+                {
+                    "name": "max_storage_buffer_binding_size",
+                    "doc": "TODO\n",
+                    "type": "uint64"
+                },
+                {
+                    "name": "min_uniform_buffer_offset_alignment",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "min_storage_buffer_offset_alignment",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "max_vertex_buffers",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "max_buffer_size",
+                    "doc": "TODO\n",
+                    "type": "uint64"
+                },
+                {
+                    "name": "max_vertex_attributes",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "max_vertex_buffer_array_stride",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "max_inter_stage_shader_components",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "max_inter_stage_shader_variables",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "max_color_attachments",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "max_color_attachment_bytes_per_sample",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "max_compute_workgroup_storage_size",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "max_compute_invocations_per_workgroup",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "max_compute_workgroup_size_x",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "max_compute_workgroup_size_y",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "max_compute_workgroup_size_z",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "max_compute_workgroups_per_dimension",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
+            "name": "required_limits",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "limits",
+                    "doc": "TODO\n",
+                    "type": "struct.limits"
+                }
+            ]
+        },
+        {
+            "name": "supported_limits",
+            "doc": "TODO\n",
+            "type": "base_out",
+            "members": [
+                {
+                    "name": "limits",
+                    "doc": "TODO\n",
+                    "type": "struct.limits"
+                }
+            ]
+        },
+        {
+            "name": "extent_3D",
+            "doc": "TODO\n",
+            "type": "standalone",
+            "members": [
+                {
+                    "name": "width",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "height",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "depth_or_array_layers",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
+            "name": "image_copy_buffer",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "layout",
+                    "doc": "TODO\n",
+                    "type": "struct.texture_data_layout"
+                },
+                {
+                    "name": "buffer",
+                    "doc": "TODO\n",
+                    "type": "object.buffer"
+                }
+            ]
+        },
+        {
+            "name": "image_copy_texture",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "texture",
+                    "doc": "TODO\n",
+                    "type": "object.texture"
+                },
+                {
+                    "name": "mip_level",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "origin",
+                    "doc": "TODO\n",
+                    "type": "struct.origin_3D"
+                },
+                {
+                    "name": "aspect",
+                    "doc": "TODO\n",
+                    "type": "enum.texture_aspect"
+                }
+            ]
+        },
+        {
+            "name": "instance_descriptor",
+            "doc": "TODO\n",
+            "type": "base_in"
+        },
+        {
+            "name": "vertex_attribute",
+            "doc": "TODO\n",
+            "type": "standalone",
+            "members": [
+                {
+                    "name": "format",
+                    "doc": "TODO\n",
+                    "type": "enum.vertex_format"
+                },
+                {
+                    "name": "offset",
+                    "doc": "TODO\n",
+                    "type": "uint64"
+                },
+                {
+                    "name": "shader_location",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
+            "name": "vertex_buffer_layout",
+            "doc": "TODO\n",
+            "type": "standalone",
+            "members": [
+                {
+                    "name": "array_stride",
+                    "doc": "TODO\n",
+                    "type": "uint64"
+                },
+                {
+                    "name": "step_mode",
+                    "doc": "TODO\n",
+                    "type": "enum.vertex_step_mode"
+                },
+                {
+                    "name": "attributes",
+                    "doc": "TODO\n",
+                    "type": "array<struct.vertex_attribute>",
+                    "pointer": "immutable"
+                }
+            ]
+        },
+        {
+            "name": "origin_3D",
+            "doc": "TODO\n",
+            "type": "standalone",
+            "members": [
+                {
+                    "name": "x",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "y",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "z",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
+            "name": "pipeline_layout_descriptor",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "label",
+                    "doc": "TODO\n",
+                    "type": "string",
+                    "optional": true
+                },
+                {
+                    "name": "bind_group_layouts",
+                    "doc": "TODO\n",
+                    "type": "array<object.bind_group_layout>",
+                    "pointer": "immutable"
+                }
+            ]
+        },
+        {
+            "name": "programmable_stage_descriptor",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "module",
+                    "doc": "TODO\n",
+                    "type": "object.shader_module"
+                },
+                {
+                    "name": "entry_point",
+                    "doc": "TODO\n",
+                    "type": "string",
+                    "optional": true
+                },
+                {
+                    "name": "constants",
+                    "doc": "TODO\n",
+                    "type": "array<struct.constant_entry>",
+                    "pointer": "immutable"
+                }
+            ]
+        },
+        {
+            "name": "query_set_descriptor",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "label",
+                    "doc": "TODO\n",
+                    "type": "string",
+                    "optional": true
+                },
+                {
+                    "name": "type",
+                    "doc": "TODO\n",
+                    "type": "enum.query_type"
+                },
+                {
+                    "name": "count",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
+            "name": "queue_descriptor",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "label",
+                    "doc": "TODO\n",
+                    "type": "string",
+                    "optional": true
+                }
+            ]
+        },
+        {
+            "name": "render_bundle_descriptor",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "label",
+                    "doc": "TODO\n",
+                    "type": "string",
+                    "optional": true
+                }
+            ]
+        },
+        {
+            "name": "render_bundle_encoder_descriptor",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "label",
+                    "doc": "TODO\n",
+                    "type": "string",
+                    "optional": true
+                },
+                {
+                    "name": "color_formats",
+                    "doc": "TODO\n",
+                    "type": "array<enum.texture_format>",
+                    "pointer": "immutable"
+                },
+                {
+                    "name": "depth_stencil_format",
+                    "doc": "TODO\n",
+                    "type": "enum.texture_format"
+                },
+                {
+                    "name": "sample_count",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "depth_read_only",
+                    "doc": "TODO\n",
+                    "type": "bool"
+                },
+                {
+                    "name": "stencil_read_only",
+                    "doc": "TODO\n",
+                    "type": "bool"
+                }
+            ]
+        },
+        {
+            "name": "render_pass_color_attachment",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "view",
+                    "doc": "TODO\n",
+                    "type": "object.texture_view",
+                    "optional": true
+                },
+                {
+                    "name": "depth_slice",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "resolve_target",
+                    "doc": "TODO\n",
+                    "type": "object.texture_view",
+                    "optional": true
+                },
+                {
+                    "name": "load_op",
+                    "doc": "TODO\n",
+                    "type": "enum.load_op"
+                },
+                {
+                    "name": "store_op",
+                    "doc": "TODO\n",
+                    "type": "enum.store_op"
+                },
+                {
+                    "name": "clear_value",
+                    "doc": "TODO\n",
+                    "type": "struct.color"
+                }
+            ]
+        },
+        {
+            "name": "render_pass_depth_stencil_attachment",
+            "doc": "TODO\n",
+            "type": "standalone",
+            "members": [
+                {
+                    "name": "view",
+                    "doc": "TODO\n",
+                    "type": "object.texture_view"
+                },
+                {
+                    "name": "depth_load_op",
+                    "doc": "TODO\n",
+                    "type": "enum.load_op"
+                },
+                {
+                    "name": "depth_store_op",
+                    "doc": "TODO\n",
+                    "type": "enum.store_op"
+                },
+                {
+                    "name": "depth_clear_value",
+                    "doc": "TODO\n",
+                    "type": "float32"
+                },
+                {
+                    "name": "depth_read_only",
+                    "doc": "TODO\n",
+                    "type": "bool"
+                },
+                {
+                    "name": "stencil_load_op",
+                    "doc": "TODO\n",
+                    "type": "enum.load_op"
+                },
+                {
+                    "name": "stencil_store_op",
+                    "doc": "TODO\n",
+                    "type": "enum.store_op"
+                },
+                {
+                    "name": "stencil_clear_value",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "stencil_read_only",
+                    "doc": "TODO\n",
+                    "type": "bool"
+                }
+            ]
+        },
+        {
+            "name": "render_pass_descriptor",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "label",
+                    "doc": "TODO\n",
+                    "type": "string",
+                    "optional": true
+                },
+                {
+                    "name": "color_attachments",
+                    "doc": "TODO\n",
+                    "type": "array<struct.render_pass_color_attachment>",
+                    "pointer": "immutable"
+                },
+                {
+                    "name": "depth_stencil_attachment",
+                    "doc": "TODO\n",
+                    "type": "struct.render_pass_depth_stencil_attachment",
+                    "pointer": "immutable",
+                    "optional": true
+                },
+                {
+                    "name": "occlusion_query_set",
+                    "doc": "TODO\n",
+                    "type": "object.query_set",
+                    "optional": true
+                },
+                {
+                    "name": "timestamp_writes",
+                    "doc": "TODO\n",
+                    "type": "struct.render_pass_timestamp_writes",
+                    "pointer": "immutable",
+                    "optional": true
+                }
+            ]
+        },
+        {
+            "name": "render_pass_descriptor_max_draw_count",
+            "doc": "TODO\n",
+            "type": "extension_in",
+            "extends": [
+                "render_pass_descriptor"
+            ],
+            "members": [
+                {
+                    "name": "max_draw_count",
+                    "doc": "TODO\n",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
+            "name": "render_pass_timestamp_writes",
+            "doc": "TODO\n",
+            "type": "standalone",
+            "members": [
+                {
+                    "name": "query_set",
+                    "doc": "TODO\n",
+                    "type": "object.query_set"
+                },
+                {
+                    "name": "beginning_of_pass_write_index",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "end_of_pass_write_index",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
+            "name": "vertex_state",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "module",
+                    "doc": "TODO\n",
+                    "type": "object.shader_module"
+                },
+                {
+                    "name": "entry_point",
+                    "doc": "TODO\n",
+                    "type": "string",
+                    "optional": true
+                },
+                {
+                    "name": "constants",
+                    "doc": "TODO\n",
+                    "type": "array<struct.constant_entry>",
+                    "pointer": "immutable"
+                },
+                {
+                    "name": "buffers",
+                    "doc": "TODO\n",
+                    "type": "array<struct.vertex_buffer_layout>",
+                    "pointer": "immutable"
+                }
+            ]
+        },
+        {
+            "name": "primitive_state",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "topology",
+                    "doc": "TODO\n",
+                    "type": "enum.primitive_topology"
+                },
+                {
+                    "name": "strip_index_format",
+                    "doc": "TODO\n",
+                    "type": "enum.index_format"
+                },
+                {
+                    "name": "front_face",
+                    "doc": "TODO\n",
+                    "type": "enum.front_face"
+                },
+                {
+                    "name": "cull_mode",
+                    "doc": "TODO\n",
+                    "type": "enum.cull_mode"
+                }
+            ]
+        },
+        {
+            "name": "primitive_depth_clip_control",
+            "doc": "TODO\n",
+            "type": "extension_in",
+            "extends": [
+                "primitive_state"
+            ],
+            "members": [
+                {
+                    "name": "unclipped_depth",
+                    "doc": "TODO\n",
+                    "type": "bool"
+                }
+            ]
+        },
+        {
+            "name": "depth_stencil_state",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "format",
+                    "doc": "TODO\n",
+                    "type": "enum.texture_format"
+                },
+                {
+                    "name": "depth_write_enabled",
+                    "doc": "TODO\n",
+                    "type": "bool"
+                },
+                {
+                    "name": "depth_compare",
+                    "doc": "TODO\n",
+                    "type": "enum.compare_function"
+                },
+                {
+                    "name": "stencil_front",
+                    "doc": "TODO\n",
+                    "type": "struct.stencil_face_state"
+                },
+                {
+                    "name": "stencil_back",
+                    "doc": "TODO\n",
+                    "type": "struct.stencil_face_state"
+                },
+                {
+                    "name": "stencil_read_mask",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "stencil_write_mask",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "depth_bias",
+                    "doc": "TODO\n",
+                    "type": "int32"
+                },
+                {
+                    "name": "depth_bias_slope_scale",
+                    "doc": "TODO\n",
+                    "type": "float32"
+                },
+                {
+                    "name": "depth_bias_clamp",
+                    "doc": "TODO\n",
+                    "type": "float32"
+                }
+            ]
+        },
+        {
+            "name": "multisample_state",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "count",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "mask",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "alpha_to_coverage_enabled",
+                    "doc": "TODO\n",
+                    "type": "bool"
+                }
+            ]
+        },
+        {
+            "name": "fragment_state",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "module",
+                    "doc": "TODO\n",
+                    "type": "object.shader_module"
+                },
+                {
+                    "name": "entry_point",
+                    "doc": "TODO\n",
+                    "type": "string",
+                    "optional": true
+                },
+                {
+                    "name": "constants",
+                    "doc": "TODO\n",
+                    "type": "array<struct.constant_entry>",
+                    "pointer": "immutable"
+                },
+                {
+                    "name": "targets",
+                    "doc": "TODO\n",
+                    "type": "array<struct.color_target_state>",
+                    "pointer": "immutable"
+                }
+            ]
+        },
+        {
+            "name": "color_target_state",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "format",
+                    "doc": "TODO\n",
+                    "type": "enum.texture_format"
+                },
+                {
+                    "name": "blend",
+                    "doc": "TODO\n",
+                    "type": "struct.blend_state",
+                    "pointer": "immutable",
+                    "optional": true
+                },
+                {
+                    "name": "write_mask",
+                    "doc": "TODO\n",
+                    "type": "bitflag.color_write_mask"
+                }
+            ]
+        },
+        {
+            "name": "blend_state",
+            "doc": "TODO\n",
+            "type": "standalone",
+            "members": [
+                {
+                    "name": "color",
+                    "doc": "TODO\n",
+                    "type": "struct.blend_component"
+                },
+                {
+                    "name": "alpha",
+                    "doc": "TODO\n",
+                    "type": "struct.blend_component"
+                }
+            ]
+        },
+        {
+            "name": "render_pipeline_descriptor",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "label",
+                    "doc": "TODO\n",
+                    "type": "string",
+                    "optional": true
+                },
+                {
+                    "name": "layout",
+                    "doc": "TODO\n",
+                    "type": "object.pipeline_layout",
+                    "optional": true
+                },
+                {
+                    "name": "vertex",
+                    "doc": "TODO\n",
+                    "type": "struct.vertex_state"
+                },
+                {
+                    "name": "primitive",
+                    "doc": "TODO\n",
+                    "type": "struct.primitive_state"
+                },
+                {
+                    "name": "depth_stencil",
+                    "doc": "TODO\n",
+                    "type": "struct.depth_stencil_state",
+                    "pointer": "immutable",
+                    "optional": true
+                },
+                {
+                    "name": "multisample",
+                    "doc": "TODO\n",
+                    "type": "struct.multisample_state"
+                },
+                {
+                    "name": "fragment",
+                    "doc": "TODO\n",
+                    "type": "struct.fragment_state",
+                    "pointer": "immutable",
+                    "optional": true
+                }
+            ]
+        },
+        {
+            "name": "sampler_descriptor",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "label",
+                    "doc": "TODO\n",
+                    "type": "string",
+                    "optional": true
+                },
+                {
+                    "name": "address_mode_u",
+                    "doc": "TODO\n",
+                    "type": "enum.address_mode"
+                },
+                {
+                    "name": "address_mode_v",
+                    "doc": "TODO\n",
+                    "type": "enum.address_mode"
+                },
+                {
+                    "name": "address_mode_w",
+                    "doc": "TODO\n",
+                    "type": "enum.address_mode"
+                },
+                {
+                    "name": "mag_filter",
+                    "doc": "TODO\n",
+                    "type": "enum.filter_mode"
+                },
+                {
+                    "name": "min_filter",
+                    "doc": "TODO\n",
+                    "type": "enum.filter_mode"
+                },
+                {
+                    "name": "mipmap_filter",
+                    "doc": "TODO\n",
+                    "type": "enum.mipmap_filter_mode"
+                },
+                {
+                    "name": "lod_min_clamp",
+                    "doc": "TODO\n",
+                    "type": "float32"
+                },
+                {
+                    "name": "lod_max_clamp",
+                    "doc": "TODO\n",
+                    "type": "float32"
+                },
+                {
+                    "name": "compare",
+                    "doc": "TODO\n",
+                    "type": "enum.compare_function"
+                },
+                {
+                    "name": "max_anisotropy",
+                    "doc": "TODO\n",
+                    "type": "uint16"
+                }
+            ]
+        },
+        {
+            "name": "shader_module_descriptor",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "label",
+                    "doc": "TODO\n",
+                    "type": "string",
+                    "optional": true
+                },
+                {
+                    "name": "hints",
+                    "doc": "TODO\n",
+                    "type": "array<struct.shader_module_compilation_hint>",
+                    "pointer": "immutable"
+                }
+            ]
+        },
+        {
+            "name": "shader_module_compilation_hint",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "entry_point",
+                    "doc": "TODO\n",
+                    "type": "string"
+                },
+                {
+                    "name": "layout",
+                    "doc": "TODO\n",
+                    "type": "object.pipeline_layout"
+                }
+            ]
+        },
+        {
+            "name": "shader_module_SPIRV_descriptor",
+            "doc": "TODO\n",
+            "type": "extension_in",
+            "extends": [
+                "shader_module_descriptor"
+            ],
+            "members": [
+                {
+                    "name": "code_size",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "code",
+                    "doc": "TODO\n",
+                    "type": "uint32",
+                    "pointer": "immutable"
+                }
+            ]
+        },
+        {
+            "name": "shader_module_WGSL_descriptor",
+            "doc": "TODO\n",
+            "type": "extension_in",
+            "extends": [
+                "shader_module_descriptor"
+            ],
+            "members": [
+                {
+                    "name": "code",
+                    "doc": "TODO\n",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "stencil_face_state",
+            "doc": "TODO\n",
+            "type": "standalone",
+            "members": [
+                {
+                    "name": "compare",
+                    "doc": "TODO\n",
+                    "type": "enum.compare_function"
+                },
+                {
+                    "name": "fail_op",
+                    "doc": "TODO\n",
+                    "type": "enum.stencil_operation"
+                },
+                {
+                    "name": "depth_fail_op",
+                    "doc": "TODO\n",
+                    "type": "enum.stencil_operation"
+                },
+                {
+                    "name": "pass_op",
+                    "doc": "TODO\n",
+                    "type": "enum.stencil_operation"
+                }
+            ]
+        },
+        {
+            "name": "surface_descriptor",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "label",
+                    "doc": "TODO\n",
+                    "type": "string",
+                    "optional": true
+                }
+            ]
+        },
+        {
+            "name": "surface_descriptor_from_android_native_window",
+            "doc": "TODO\n",
+            "type": "extension_in",
+            "extends": [
+                "surface_descriptor"
+            ],
+            "members": [
+                {
+                    "name": "window",
+                    "doc": "TODO\n",
+                    "type": "c_void",
+                    "pointer": "mutable"
+                }
+            ]
+        },
+        {
+            "name": "surface_descriptor_from_canvas_HTML_selector",
+            "doc": "TODO\n",
+            "type": "extension_in",
+            "extends": [
+                "surface_descriptor"
+            ],
+            "members": [
+                {
+                    "name": "selector",
+                    "doc": "TODO\n",
+                    "type": "string"
+                }
+            ]
+        },
+        {
+            "name": "surface_descriptor_from_metal_layer",
+            "doc": "TODO\n",
+            "type": "extension_in",
+            "extends": [
+                "surface_descriptor"
+            ],
+            "members": [
+                {
+                    "name": "layer",
+                    "doc": "TODO\n",
+                    "type": "c_void",
+                    "pointer": "mutable"
+                }
+            ]
+        },
+        {
+            "name": "surface_descriptor_from_windows_HWND",
+            "doc": "TODO\n",
+            "type": "extension_in",
+            "extends": [
+                "surface_descriptor"
+            ],
+            "members": [
+                {
+                    "name": "hinstance",
+                    "doc": "TODO\n",
+                    "type": "c_void",
+                    "pointer": "mutable"
+                },
+                {
+                    "name": "hwnd",
+                    "doc": "TODO\n",
+                    "type": "c_void",
+                    "pointer": "mutable"
+                }
+            ]
+        },
+        {
+            "name": "surface_descriptor_from_xcb_window",
+            "doc": "TODO\n",
+            "type": "extension_in",
+            "extends": [
+                "surface_descriptor"
+            ],
+            "members": [
+                {
+                    "name": "connection",
+                    "doc": "TODO\n",
+                    "type": "c_void",
+                    "pointer": "mutable"
+                },
+                {
+                    "name": "window",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
+            "name": "surface_descriptor_from_xlib_window",
+            "doc": "TODO\n",
+            "type": "extension_in",
+            "extends": [
+                "surface_descriptor"
+            ],
+            "members": [
+                {
+                    "name": "display",
+                    "doc": "TODO\n",
+                    "type": "c_void",
+                    "pointer": "mutable"
+                },
+                {
+                    "name": "window",
+                    "doc": "TODO\n",
+                    "type": "uint64"
+                }
+            ]
+        },
+        {
+            "name": "surface_descriptor_from_wayland_surface",
+            "doc": "TODO\n",
+            "type": "extension_in",
+            "extends": [
+                "surface_descriptor"
+            ],
+            "members": [
+                {
+                    "name": "display",
+                    "doc": "TODO\n",
+                    "type": "c_void",
+                    "pointer": "mutable"
+                },
+                {
+                    "name": "surface",
+                    "doc": "TODO\n",
+                    "type": "c_void",
+                    "pointer": "mutable"
+                }
+            ]
+        },
+        {
+            "name": "surface_texture",
+            "doc": "TODO\n",
+            "type": "standalone",
+            "members": [
+                {
+                    "name": "texture",
+                    "doc": "TODO\n",
+                    "type": "object.texture"
+                },
+                {
+                    "name": "suboptimal",
+                    "doc": "TODO\n",
+                    "type": "bool"
+                },
+                {
+                    "name": "status",
+                    "doc": "TODO\n",
+                    "type": "enum.surface_get_current_texture_status"
+                }
+            ]
+        },
+        {
+            "name": "texture_data_layout",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "offset",
+                    "doc": "TODO\n",
+                    "type": "uint64"
+                },
+                {
+                    "name": "bytes_per_row",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "rows_per_image",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                }
+            ]
+        },
+        {
+            "name": "texture_descriptor",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "label",
+                    "doc": "TODO\n",
+                    "type": "string",
+                    "optional": true
+                },
+                {
+                    "name": "usage",
+                    "doc": "TODO\n",
+                    "type": "bitflag.texture_usage"
+                },
+                {
+                    "name": "dimension",
+                    "doc": "TODO\n",
+                    "type": "enum.texture_dimension"
+                },
+                {
+                    "name": "size",
+                    "doc": "TODO\n",
+                    "type": "struct.extent_3D"
+                },
+                {
+                    "name": "format",
+                    "doc": "TODO\n",
+                    "type": "enum.texture_format"
+                },
+                {
+                    "name": "mip_level_count",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "sample_count",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "view_formats",
+                    "doc": "TODO\n",
+                    "type": "array<enum.texture_format>",
+                    "pointer": "immutable"
+                }
+            ]
+        },
+        {
+            "name": "texture_view_descriptor",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "label",
+                    "doc": "TODO\n",
+                    "type": "string",
+                    "optional": true
+                },
+                {
+                    "name": "format",
+                    "doc": "TODO\n",
+                    "type": "enum.texture_format"
+                },
+                {
+                    "name": "dimension",
+                    "doc": "TODO\n",
+                    "type": "enum.texture_view_dimension"
+                },
+                {
+                    "name": "base_mip_level",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "mip_level_count",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "base_array_layer",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "array_layer_count",
+                    "doc": "TODO\n",
+                    "type": "uint32"
+                },
+                {
+                    "name": "aspect",
+                    "doc": "TODO\n",
+                    "type": "enum.texture_aspect"
+                }
+            ]
+        },
+        {
+            "name": "uncaptured_error_callback_info",
+            "doc": "TODO\n",
+            "type": "base_in",
+            "members": [
+                {
+                    "name": "callback",
+                    "doc": "TODO\n",
+                    "type": "function_type.error_callback"
+                },
+                {
+                    "name": "userdata",
+                    "doc": "TODO\n",
+                    "type": "c_void",
+                    "pointer": "mutable"
+                }
+            ]
+        }
+    ],
+    "functions": [
+        {
+            "name": "create_instance",
+            "doc": "TODO\n",
+            "returns": {
+                "doc": "TODO\n",
+                "type": "object.instance"
+            },
+            "args": [
+                {
+                    "name": "descriptor",
+                    "doc": "TODO\n",
+                    "type": "struct.instance_descriptor",
+                    "pointer": "immutable",
+                    "optional": true
+                }
+            ]
+        }
+    ],
+    "objects": [
+        {
+            "name": "adapter",
+            "doc": "TODO\n",
+            "methods": [
+                {
+                    "name": "get_limits",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "bool"
+                    },
+                    "args": [
+                        {
+                            "name": "limits",
+                            "doc": "TODO\n",
+                            "type": "struct.supported_limits",
+                            "pointer": "mutable"
+                        }
+                    ]
+                },
+                {
+                    "name": "has_feature",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "bool"
+                    },
+                    "args": [
+                        {
+                            "name": "feature",
+                            "doc": "TODO\n",
+                            "type": "enum.feature_name"
+                        }
+                    ]
+                },
+                {
+                    "name": "enumerate_features",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "usize"
+                    },
+                    "args": [
+                        {
+                            "name": "features",
+                            "doc": "TODO\n",
+                            "type": "enum.feature_name",
+                            "pointer": "mutable"
+                        }
+                    ]
+                },
+                {
+                    "name": "get_info",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "info",
+                            "doc": "TODO\n",
+                            "type": "struct.adapter_info",
+                            "pointer": "mutable"
+                        }
+                    ]
+                },
+                {
+                    "name": "request_device",
+                    "doc": "TODO\n",
+                    "returns_async": [
+                        {
+                            "name": "status",
+                            "doc": "TODO\n",
+                            "type": "enum.request_device_status"
+                        },
+                        {
+                            "name": "device",
+                            "doc": "TODO\n",
+                            "type": "object.device"
+                        },
+                        {
+                            "name": "message",
+                            "doc": "TODO\n",
+                            "type": "string"
+                        }
+                    ],
+                    "args": [
+                        {
+                            "name": "descriptor",
+                            "doc": "TODO\n",
+                            "type": "struct.device_descriptor",
+                            "pointer": "immutable",
+                            "optional": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "bind_group",
+            "doc": "TODO\n",
+            "methods": [
+                {
+                    "name": "set_label",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "label",
+                            "doc": "TODO\n",
+                            "type": "string"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "bind_group_layout",
+            "doc": "TODO\n",
+            "methods": [
+                {
+                    "name": "set_label",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "label",
+                            "doc": "TODO\n",
+                            "type": "string"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "buffer",
+            "doc": "TODO\n",
+            "methods": [
+                {
+                    "name": "map_async",
+                    "doc": "TODO\n",
+                    "returns_async": [
+                        {
+                            "name": "status",
+                            "doc": "TODO\n",
+                            "type": "enum.buffer_map_async_status"
+                        }
+                    ],
+                    "args": [
+                        {
+                            "name": "mode",
+                            "doc": "TODO\n",
+                            "type": "bitflag.map_mode"
+                        },
+                        {
+                            "name": "offset",
+                            "doc": "TODO\n",
+                            "type": "usize"
+                        },
+                        {
+                            "name": "size",
+                            "doc": "TODO\n",
+                            "type": "usize"
+                        }
+                    ]
+                },
+                {
+                    "name": "get_mapped_range",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "c_void",
+                        "pointer": "mutable"
+                    },
+                    "args": [
+                        {
+                            "name": "offset",
+                            "doc": "TODO\n",
+                            "type": "usize"
+                        },
+                        {
+                            "name": "size",
+                            "doc": "TODO\n",
+                            "type": "usize"
+                        }
+                    ]
+                },
+                {
+                    "name": "get_const_mapped_range",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "c_void",
+                        "pointer": "immutable"
+                    },
+                    "args": [
+                        {
+                            "name": "offset",
+                            "doc": "TODO\n",
+                            "type": "usize"
+                        },
+                        {
+                            "name": "size",
+                            "doc": "TODO\n",
+                            "type": "usize"
+                        }
+                    ]
+                },
+                {
+                    "name": "set_label",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "label",
+                            "doc": "TODO\n",
+                            "type": "string"
+                        }
+                    ]
+                },
+                {
+                    "name": "get_usage",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "bitflag.buffer_usage"
+                    }
+                },
+                {
+                    "name": "get_size",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "uint64"
+                    }
+                },
+                {
+                    "name": "get_map_state",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "enum.buffer_map_state"
+                    }
+                },
+                {
+                    "name": "unmap",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "destroy",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "command_buffer",
+            "doc": "TODO\n",
+            "methods": [
+                {
+                    "name": "set_label",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "label",
+                            "doc": "TODO\n",
+                            "type": "string"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "command_encoder",
+            "doc": "TODO\n",
+            "methods": [
+                {
+                    "name": "finish",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "object.command_buffer"
+                    },
+                    "args": [
+                        {
+                            "name": "descriptor",
+                            "doc": "TODO\n",
+                            "type": "struct.command_buffer_descriptor",
+                            "pointer": "immutable",
+                            "optional": true
+                        }
+                    ]
+                },
+                {
+                    "name": "begin_compute_pass",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "object.compute_pass_encoder"
+                    },
+                    "args": [
+                        {
+                            "name": "descriptor",
+                            "doc": "TODO\n",
+                            "type": "struct.compute_pass_descriptor",
+                            "pointer": "immutable",
+                            "optional": true
+                        }
+                    ]
+                },
+                {
+                    "name": "begin_render_pass",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "object.render_pass_encoder"
+                    },
+                    "args": [
+                        {
+                            "name": "descriptor",
+                            "doc": "TODO\n",
+                            "type": "struct.render_pass_descriptor",
+                            "pointer": "immutable"
+                        }
+                    ]
+                },
+                {
+                    "name": "copy_buffer_to_buffer",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "source",
+                            "doc": "TODO\n",
+                            "type": "object.buffer"
+                        },
+                        {
+                            "name": "source_offset",
+                            "doc": "TODO\n",
+                            "type": "uint64"
+                        },
+                        {
+                            "name": "destination",
+                            "doc": "TODO\n",
+                            "type": "object.buffer"
+                        },
+                        {
+                            "name": "destination_offset",
+                            "doc": "TODO\n",
+                            "type": "uint64"
+                        },
+                        {
+                            "name": "size",
+                            "doc": "TODO\n",
+                            "type": "uint64"
+                        }
+                    ]
+                },
+                {
+                    "name": "copy_buffer_to_texture",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "source",
+                            "doc": "TODO\n",
+                            "type": "struct.image_copy_buffer",
+                            "pointer": "immutable"
+                        },
+                        {
+                            "name": "destination",
+                            "doc": "TODO\n",
+                            "type": "struct.image_copy_texture",
+                            "pointer": "immutable"
+                        },
+                        {
+                            "name": "copy_size",
+                            "doc": "TODO\n",
+                            "type": "struct.extent_3D",
+                            "pointer": "immutable"
+                        }
+                    ]
+                },
+                {
+                    "name": "copy_texture_to_buffer",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "source",
+                            "doc": "TODO\n",
+                            "type": "struct.image_copy_texture",
+                            "pointer": "immutable"
+                        },
+                        {
+                            "name": "destination",
+                            "doc": "TODO\n",
+                            "type": "struct.image_copy_buffer",
+                            "pointer": "immutable"
+                        },
+                        {
+                            "name": "copy_size",
+                            "doc": "TODO\n",
+                            "type": "struct.extent_3D",
+                            "pointer": "immutable"
+                        }
+                    ]
+                },
+                {
+                    "name": "copy_texture_to_texture",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "source",
+                            "doc": "TODO\n",
+                            "type": "struct.image_copy_texture",
+                            "pointer": "immutable"
+                        },
+                        {
+                            "name": "destination",
+                            "doc": "TODO\n",
+                            "type": "struct.image_copy_texture",
+                            "pointer": "immutable"
+                        },
+                        {
+                            "name": "copy_size",
+                            "doc": "TODO\n",
+                            "type": "struct.extent_3D",
+                            "pointer": "immutable"
+                        }
+                    ]
+                },
+                {
+                    "name": "clear_buffer",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "buffer",
+                            "doc": "TODO\n",
+                            "type": "object.buffer"
+                        },
+                        {
+                            "name": "offset",
+                            "doc": "TODO\n",
+                            "type": "uint64"
+                        },
+                        {
+                            "name": "size",
+                            "doc": "TODO\n",
+                            "type": "uint64"
+                        }
+                    ]
+                },
+                {
+                    "name": "insert_debug_marker",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "marker_label",
+                            "doc": "TODO\n",
+                            "type": "string"
+                        }
+                    ]
+                },
+                {
+                    "name": "pop_debug_group",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "push_debug_group",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "group_label",
+                            "doc": "TODO\n",
+                            "type": "string"
+                        }
+                    ]
+                },
+                {
+                    "name": "resolve_query_set",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "query_set",
+                            "doc": "TODO\n",
+                            "type": "object.query_set"
+                        },
+                        {
+                            "name": "first_query",
+                            "doc": "TODO\n",
+                            "type": "uint32"
+                        },
+                        {
+                            "name": "query_count",
+                            "doc": "TODO\n",
+                            "type": "uint32"
+                        },
+                        {
+                            "name": "destination",
+                            "doc": "TODO\n",
+                            "type": "object.buffer"
+                        },
+                        {
+                            "name": "destination_offset",
+                            "doc": "TODO\n",
+                            "type": "uint64"
+                        }
+                    ]
+                },
+                {
+                    "name": "write_timestamp",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "query_set",
+                            "doc": "TODO\n",
+                            "type": "object.query_set"
+                        },
+                        {
+                            "name": "query_index",
+                            "doc": "TODO\n",
+                            "type": "uint32"
+                        }
+                    ]
+                },
+                {
+                    "name": "set_label",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "label",
+                            "doc": "TODO\n",
+                            "type": "string"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "compute_pass_encoder",
+            "doc": "TODO\n",
+            "methods": [
+                {
+                    "name": "insert_debug_marker",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "marker_label",
+                            "doc": "TODO\n",
+                            "type": "string"
+                        }
+                    ]
+                },
+                {
+                    "name": "pop_debug_group",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "push_debug_group",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "group_label",
+                            "doc": "TODO\n",
+                            "type": "string"
+                        }
+                    ]
+                },
+                {
+                    "name": "set_pipeline",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "pipeline",
+                            "doc": "TODO\n",
+                            "type": "object.compute_pipeline"
+                        }
+                    ]
+                },
+                {
+                    "name": "set_bind_group",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "group_index",
+                            "doc": "TODO\n",
+                            "type": "uint32"
+                        },
+                        {
+                            "name": "group",
+                            "doc": "TODO\n",
+                            "type": "object.bind_group",
+                            "optional": true
+                        },
+                        {
+                            "name": "dynamic_offsets",
+                            "doc": "TODO\n",
+                            "type": "array<uint32>",
+                            "pointer": "immutable"
+                        }
+                    ]
+                },
+                {
+                    "name": "dispatch_workgroups",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "workgroupCountX",
+                            "doc": "TODO\n",
+                            "type": "uint32"
+                        },
+                        {
+                            "name": "workgroupCountY",
+                            "doc": "TODO\n",
+                            "type": "uint32"
+                        },
+                        {
+                            "name": "workgroupCountZ",
+                            "doc": "TODO\n",
+                            "type": "uint32"
+                        }
+                    ]
+                },
+                {
+                    "name": "dispatch_workgroups_indirect",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "indirect_buffer",
+                            "doc": "TODO\n",
+                            "type": "object.buffer"
+                        },
+                        {
+                            "name": "indirect_offset",
+                            "doc": "TODO\n",
+                            "type": "uint64"
+                        }
+                    ]
+                },
+                {
+                    "name": "end",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "set_label",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "label",
+                            "doc": "TODO\n",
+                            "type": "string"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "compute_pipeline",
+            "doc": "TODO\n",
+            "methods": [
+                {
+                    "name": "get_bind_group_layout",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "object.bind_group_layout"
+                    },
+                    "args": [
+                        {
+                            "name": "group_index",
+                            "doc": "TODO\n",
+                            "type": "uint32"
+                        }
+                    ]
+                },
+                {
+                    "name": "set_label",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "label",
+                            "doc": "TODO\n",
+                            "type": "string"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "device",
+            "doc": "TODO\n",
+            "methods": [
+                {
+                    "name": "create_bind_group",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "object.bind_group"
+                    },
+                    "args": [
+                        {
+                            "name": "descriptor",
+                            "doc": "TODO\n",
+                            "type": "struct.bind_group_descriptor",
+                            "pointer": "immutable"
+                        }
+                    ]
+                },
+                {
+                    "name": "create_bind_group_layout",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "object.bind_group_layout"
+                    },
+                    "args": [
+                        {
+                            "name": "descriptor",
+                            "doc": "TODO\n",
+                            "type": "struct.bind_group_layout_descriptor",
+                            "pointer": "immutable"
+                        }
+                    ]
+                },
+                {
+                    "name": "create_buffer",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "object.buffer"
+                    },
+                    "args": [
+                        {
+                            "name": "descriptor",
+                            "doc": "TODO\n",
+                            "type": "struct.buffer_descriptor",
+                            "pointer": "immutable"
+                        }
+                    ]
+                },
+                {
+                    "name": "create_command_encoder",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "object.command_encoder"
+                    },
+                    "args": [
+                        {
+                            "name": "descriptor",
+                            "doc": "TODO\n",
+                            "type": "struct.command_encoder_descriptor",
+                            "pointer": "immutable",
+                            "optional": true
+                        }
+                    ]
+                },
+                {
+                    "name": "create_compute_pipeline",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "object.compute_pipeline"
+                    },
+                    "args": [
+                        {
+                            "name": "descriptor",
+                            "doc": "TODO\n",
+                            "type": "struct.compute_pipeline_descriptor",
+                            "pointer": "immutable"
+                        }
+                    ]
+                },
+                {
+                    "name": "create_compute_pipeline_async",
+                    "doc": "TODO\n",
+                    "returns_async": [
+                        {
+                            "name": "status",
+                            "doc": "TODO\n",
+                            "type": "enum.create_pipeline_async_status"
+                        },
+                        {
+                            "name": "pipeline",
+                            "doc": "TODO\n",
+                            "type": "object.compute_pipeline"
+                        },
+                        {
+                            "name": "message",
+                            "doc": "TODO\n",
+                            "type": "string"
+                        }
+                    ],
+                    "args": [
+                        {
+                            "name": "descriptor",
+                            "doc": "TODO\n",
+                            "type": "struct.compute_pipeline_descriptor",
+                            "pointer": "immutable"
+                        }
+                    ]
+                },
+                {
+                    "name": "create_pipeline_layout",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "object.pipeline_layout"
+                    },
+                    "args": [
+                        {
+                            "name": "descriptor",
+                            "doc": "TODO\n",
+                            "type": "struct.pipeline_layout_descriptor",
+                            "pointer": "immutable"
+                        }
+                    ]
+                },
+                {
+                    "name": "create_query_set",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "object.query_set"
+                    },
+                    "args": [
+                        {
+                            "name": "descriptor",
+                            "doc": "TODO\n",
+                            "type": "struct.query_set_descriptor",
+                            "pointer": "immutable"
+                        }
+                    ]
+                },
+                {
+                    "name": "create_render_pipeline_async",
+                    "doc": "TODO\n",
+                    "returns_async": [
+                        {
+                            "name": "status",
+                            "doc": "TODO\n",
+                            "type": "enum.create_pipeline_async_status"
+                        },
+                        {
+                            "name": "pipeline",
+                            "doc": "TODO\n",
+                            "type": "object.render_pipeline"
+                        },
+                        {
+                            "name": "message",
+                            "doc": "TODO\n",
+                            "type": "string"
+                        }
+                    ],
+                    "args": [
+                        {
+                            "name": "descriptor",
+                            "doc": "TODO\n",
+                            "type": "struct.render_pipeline_descriptor",
+                            "pointer": "immutable"
+                        }
+                    ]
+                },
+                {
+                    "name": "create_render_bundle_encoder",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "object.render_bundle_encoder"
+                    },
+                    "args": [
+                        {
+                            "name": "descriptor",
+                            "doc": "TODO\n",
+                            "type": "struct.render_bundle_encoder_descriptor",
+                            "pointer": "immutable"
+                        }
+                    ]
+                },
+                {
+                    "name": "create_render_pipeline",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "object.render_pipeline"
+                    },
+                    "args": [
+                        {
+                            "name": "descriptor",
+                            "doc": "TODO\n",
+                            "type": "struct.render_pipeline_descriptor",
+                            "pointer": "immutable"
+                        }
+                    ]
+                },
+                {
+                    "name": "create_sampler",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "object.sampler"
+                    },
+                    "args": [
+                        {
+                            "name": "descriptor",
+                            "doc": "TODO\n",
+                            "type": "struct.sampler_descriptor",
+                            "pointer": "immutable",
+                            "optional": true
+                        }
+                    ]
+                },
+                {
+                    "name": "create_shader_module",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "object.shader_module"
+                    },
+                    "args": [
+                        {
+                            "name": "descriptor",
+                            "doc": "TODO\n",
+                            "type": "struct.shader_module_descriptor",
+                            "pointer": "immutable"
+                        }
+                    ]
+                },
+                {
+                    "name": "create_texture",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "object.texture"
+                    },
+                    "args": [
+                        {
+                            "name": "descriptor",
+                            "doc": "TODO\n",
+                            "type": "struct.texture_descriptor",
+                            "pointer": "immutable"
+                        }
+                    ]
+                },
+                {
+                    "name": "destroy",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "get_limits",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "bool"
+                    },
+                    "args": [
+                        {
+                            "name": "limits",
+                            "doc": "TODO\n",
+                            "type": "struct.supported_limits",
+                            "pointer": "mutable"
+                        }
+                    ]
+                },
+                {
+                    "name": "has_feature",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "bool"
+                    },
+                    "args": [
+                        {
+                            "name": "feature",
+                            "doc": "TODO\n",
+                            "type": "enum.feature_name"
+                        }
+                    ]
+                },
+                {
+                    "name": "enumerate_features",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "usize"
+                    },
+                    "args": [
+                        {
+                            "name": "features",
+                            "doc": "TODO\n",
+                            "type": "enum.feature_name",
+                            "pointer": "mutable"
+                        }
+                    ]
+                },
+                {
+                    "name": "get_queue",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "object.queue"
+                    }
+                },
+                {
+                    "name": "push_error_scope",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "filter",
+                            "doc": "TODO\n",
+                            "type": "enum.error_filter"
+                        }
+                    ]
+                },
+                {
+                    "name": "pop_error_scope",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "callback",
+                            "doc": "TODO\n",
+                            "type": "function_type.error_callback"
+                        },
+                        {
+                            "name": "userdata",
+                            "doc": "TODO\n",
+                            "type": "c_void",
+                            "pointer": "mutable"
+                        }
+                    ]
+                },
+                {
+                    "name": "set_label",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "label",
+                            "doc": "TODO\n",
+                            "type": "string"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "instance",
+            "doc": "TODO\n",
+            "methods": [
+                {
+                    "name": "create_surface",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "object.surface"
+                    },
+                    "args": [
+                        {
+                            "name": "descriptor",
+                            "doc": "TODO\n",
+                            "type": "struct.surface_descriptor",
+                            "pointer": "immutable"
+                        }
+                    ]
+                },
+                {
+                    "name": "has_WGSL_language_feature",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "bool"
+                    },
+                    "args": [
+                        {
+                            "name": "feature",
+                            "doc": "TODO\n",
+                            "type": "enum.WGSL_feature_name"
+                        }
+                    ]
+                },
+                {
+                    "name": "process_events",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "request_adapter",
+                    "doc": "TODO\n",
+                    "returns_async": [
+                        {
+                            "name": "status",
+                            "doc": "TODO\n",
+                            "type": "enum.request_adapter_status"
+                        },
+                        {
+                            "name": "adapter",
+                            "doc": "TODO\n",
+                            "type": "object.adapter"
+                        },
+                        {
+                            "name": "message",
+                            "doc": "TODO\n",
+                            "type": "string"
+                        }
+                    ],
+                    "args": [
+                        {
+                            "name": "options",
+                            "doc": "TODO\n",
+                            "type": "struct.request_adapter_options",
+                            "pointer": "immutable",
+                            "optional": true
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "pipeline_layout",
+            "doc": "TODO\n",
+            "methods": [
+                {
+                    "name": "set_label",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "label",
+                            "doc": "TODO\n",
+                            "type": "string"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "query_set",
+            "doc": "TODO\n",
+            "methods": [
+                {
+                    "name": "set_label",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "label",
+                            "doc": "TODO\n",
+                            "type": "string"
+                        }
+                    ]
+                },
+                {
+                    "name": "get_type",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "enum.query_type"
+                    }
+                },
+                {
+                    "name": "get_count",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "uint32"
+                    }
+                },
+                {
+                    "name": "destroy",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "queue",
+            "doc": "TODO\n",
+            "methods": [
+                {
+                    "name": "submit",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "commands",
+                            "doc": "TODO\n",
+                            "type": "array<object.command_buffer>",
+                            "pointer": "immutable"
+                        }
+                    ]
+                },
+                {
+                    "name": "on_submitted_work_done",
+                    "doc": "TODO\n",
+                    "returns_async": [
+                        {
+                            "name": "status",
+                            "doc": "TODO\n",
+                            "type": "enum.queue_work_done_status"
+                        }
+                    ]
+                },
+                {
+                    "name": "write_buffer",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "buffer",
+                            "doc": "TODO\n",
+                            "type": "object.buffer"
+                        },
+                        {
+                            "name": "buffer_offset",
+                            "doc": "TODO\n",
+                            "type": "uint64"
+                        },
+                        {
+                            "name": "data",
+                            "doc": "TODO\n",
+                            "type": "c_void",
+                            "pointer": "immutable"
+                        },
+                        {
+                            "name": "size",
+                            "doc": "TODO\n",
+                            "type": "usize"
+                        }
+                    ]
+                },
+                {
+                    "name": "write_texture",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "destination",
+                            "doc": "TODO\n",
+                            "type": "struct.image_copy_texture",
+                            "pointer": "immutable"
+                        },
+                        {
+                            "name": "data",
+                            "doc": "TODO\n",
+                            "type": "c_void",
+                            "pointer": "immutable"
+                        },
+                        {
+                            "name": "data_size",
+                            "doc": "TODO\n",
+                            "type": "usize"
+                        },
+                        {
+                            "name": "data_layout",
+                            "doc": "TODO\n",
+                            "type": "struct.texture_data_layout",
+                            "pointer": "immutable"
+                        },
+                        {
+                            "name": "write_size",
+                            "doc": "TODO\n",
+                            "type": "struct.extent_3D",
+                            "pointer": "immutable"
+                        }
+                    ]
+                },
+                {
+                    "name": "set_label",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "label",
+                            "doc": "TODO\n",
+                            "type": "string"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "render_bundle",
+            "doc": "TODO\n",
+            "methods": [
+                {
+                    "name": "set_label",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "label",
+                            "doc": "TODO\n",
+                            "type": "string"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "render_bundle_encoder",
+            "doc": "TODO\n",
+            "methods": [
+                {
+                    "name": "set_pipeline",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "pipeline",
+                            "doc": "TODO\n",
+                            "type": "object.render_pipeline"
+                        }
+                    ]
+                },
+                {
+                    "name": "set_bind_group",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "group_index",
+                            "doc": "TODO\n",
+                            "type": "uint32"
+                        },
+                        {
+                            "name": "group",
+                            "doc": "TODO\n",
+                            "type": "object.bind_group",
+                            "optional": true
+                        },
+                        {
+                            "name": "dynamic_offsets",
+                            "doc": "TODO\n",
+                            "type": "array<uint32>",
+                            "pointer": "immutable"
+                        }
+                    ]
+                },
+                {
+                    "name": "draw",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "vertex_count",
+                            "doc": "TODO\n",
+                            "type": "uint32"
+                        },
+                        {
+                            "name": "instance_count",
+                            "doc": "TODO\n",
+                            "type": "uint32"
+                        },
+                        {
+                            "name": "first_vertex",
+                            "doc": "TODO\n",
+                            "type": "uint32"
+                        },
+                        {
+                            "name": "first_instance",
+                            "doc": "TODO\n",
+                            "type": "uint32"
+                        }
+                    ]
+                },
+                {
+                    "name": "draw_indexed",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "index_count",
+                            "doc": "TODO\n",
+                            "type": "uint32"
+                        },
+                        {
+                            "name": "instance_count",
+                            "doc": "TODO\n",
+                            "type": "uint32"
+                        },
+                        {
+                            "name": "first_index",
+                            "doc": "TODO\n",
+                            "type": "uint32"
+                        },
+                        {
+                            "name": "base_vertex",
+                            "doc": "TODO\n",
+                            "type": "int32"
+                        },
+                        {
+                            "name": "first_instance",
+                            "doc": "TODO\n",
+                            "type": "uint32"
+                        }
+                    ]
+                },
+                {
+                    "name": "draw_indirect",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "indirect_buffer",
+                            "doc": "TODO\n",
+                            "type": "object.buffer"
+                        },
+                        {
+                            "name": "indirect_offset",
+                            "doc": "TODO\n",
+                            "type": "uint64"
+                        }
+                    ]
+                },
+                {
+                    "name": "draw_indexed_indirect",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "indirect_buffer",
+                            "doc": "TODO\n",
+                            "type": "object.buffer"
+                        },
+                        {
+                            "name": "indirect_offset",
+                            "doc": "TODO\n",
+                            "type": "uint64"
+                        }
+                    ]
+                },
+                {
+                    "name": "insert_debug_marker",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "marker_label",
+                            "doc": "TODO\n",
+                            "type": "string"
+                        }
+                    ]
+                },
+                {
+                    "name": "pop_debug_group",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "push_debug_group",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "group_label",
+                            "doc": "TODO\n",
+                            "type": "string"
+                        }
+                    ]
+                },
+                {
+                    "name": "set_vertex_buffer",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "slot",
+                            "doc": "TODO\n",
+                            "type": "uint32"
+                        },
+                        {
+                            "name": "buffer",
+                            "doc": "TODO\n",
+                            "type": "object.buffer",
+                            "optional": true
+                        },
+                        {
+                            "name": "offset",
+                            "doc": "TODO\n",
+                            "type": "uint64"
+                        },
+                        {
+                            "name": "size",
+                            "doc": "TODO\n",
+                            "type": "uint64"
+                        }
+                    ]
+                },
+                {
+                    "name": "set_index_buffer",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "buffer",
+                            "doc": "TODO\n",
+                            "type": "object.buffer"
+                        },
+                        {
+                            "name": "format",
+                            "doc": "TODO\n",
+                            "type": "enum.index_format"
+                        },
+                        {
+                            "name": "offset",
+                            "doc": "TODO\n",
+                            "type": "uint64"
+                        },
+                        {
+                            "name": "size",
+                            "doc": "TODO\n",
+                            "type": "uint64"
+                        }
+                    ]
+                },
+                {
+                    "name": "finish",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "object.render_bundle"
+                    },
+                    "args": [
+                        {
+                            "name": "descriptor",
+                            "doc": "TODO\n",
+                            "type": "struct.render_bundle_descriptor",
+                            "pointer": "immutable",
+                            "optional": true
+                        }
+                    ]
+                },
+                {
+                    "name": "set_label",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "label",
+                            "doc": "TODO\n",
+                            "type": "string"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "render_pass_encoder",
+            "doc": "TODO\n",
+            "methods": [
+                {
+                    "name": "set_pipeline",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "pipeline",
+                            "doc": "TODO\n",
+                            "type": "object.render_pipeline"
+                        }
+                    ]
+                },
+                {
+                    "name": "set_bind_group",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "group_index",
+                            "doc": "TODO\n",
+                            "type": "uint32"
+                        },
+                        {
+                            "name": "group",
+                            "doc": "TODO\n",
+                            "type": "object.bind_group",
+                            "optional": true
+                        },
+                        {
+                            "name": "dynamic_offsets",
+                            "doc": "TODO\n",
+                            "type": "array<uint32>",
+                            "pointer": "immutable"
+                        }
+                    ]
+                },
+                {
+                    "name": "draw",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "vertex_count",
+                            "doc": "TODO\n",
+                            "type": "uint32"
+                        },
+                        {
+                            "name": "instance_count",
+                            "doc": "TODO\n",
+                            "type": "uint32"
+                        },
+                        {
+                            "name": "first_vertex",
+                            "doc": "TODO\n",
+                            "type": "uint32"
+                        },
+                        {
+                            "name": "first_instance",
+                            "doc": "TODO\n",
+                            "type": "uint32"
+                        }
+                    ]
+                },
+                {
+                    "name": "draw_indexed",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "index_count",
+                            "doc": "TODO\n",
+                            "type": "uint32"
+                        },
+                        {
+                            "name": "instance_count",
+                            "doc": "TODO\n",
+                            "type": "uint32"
+                        },
+                        {
+                            "name": "first_index",
+                            "doc": "TODO\n",
+                            "type": "uint32"
+                        },
+                        {
+                            "name": "base_vertex",
+                            "doc": "TODO\n",
+                            "type": "int32"
+                        },
+                        {
+                            "name": "first_instance",
+                            "doc": "TODO\n",
+                            "type": "uint32"
+                        }
+                    ]
+                },
+                {
+                    "name": "draw_indirect",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "indirect_buffer",
+                            "doc": "TODO\n",
+                            "type": "object.buffer"
+                        },
+                        {
+                            "name": "indirect_offset",
+                            "doc": "TODO\n",
+                            "type": "uint64"
+                        }
+                    ]
+                },
+                {
+                    "name": "draw_indexed_indirect",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "indirect_buffer",
+                            "doc": "TODO\n",
+                            "type": "object.buffer"
+                        },
+                        {
+                            "name": "indirect_offset",
+                            "doc": "TODO\n",
+                            "type": "uint64"
+                        }
+                    ]
+                },
+                {
+                    "name": "execute_bundles",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "bundles",
+                            "doc": "TODO\n",
+                            "type": "array<object.render_bundle>",
+                            "pointer": "immutable"
+                        }
+                    ]
+                },
+                {
+                    "name": "insert_debug_marker",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "marker_label",
+                            "doc": "TODO\n",
+                            "type": "string"
+                        }
+                    ]
+                },
+                {
+                    "name": "pop_debug_group",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "push_debug_group",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "group_label",
+                            "doc": "TODO\n",
+                            "type": "string"
+                        }
+                    ]
+                },
+                {
+                    "name": "set_stencil_reference",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "reference",
+                            "doc": "TODO\n",
+                            "type": "uint32"
+                        }
+                    ]
+                },
+                {
+                    "name": "set_blend_constant",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "color",
+                            "doc": "TODO\n",
+                            "type": "struct.color",
+                            "pointer": "immutable"
+                        }
+                    ]
+                },
+                {
+                    "name": "set_viewport",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "x",
+                            "doc": "TODO\n",
+                            "type": "float32"
+                        },
+                        {
+                            "name": "y",
+                            "doc": "TODO\n",
+                            "type": "float32"
+                        },
+                        {
+                            "name": "width",
+                            "doc": "TODO\n",
+                            "type": "float32"
+                        },
+                        {
+                            "name": "height",
+                            "doc": "TODO\n",
+                            "type": "float32"
+                        },
+                        {
+                            "name": "min_depth",
+                            "doc": "TODO\n",
+                            "type": "float32"
+                        },
+                        {
+                            "name": "max_depth",
+                            "doc": "TODO\n",
+                            "type": "float32"
+                        }
+                    ]
+                },
+                {
+                    "name": "set_scissor_rect",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "x",
+                            "doc": "TODO\n",
+                            "type": "uint32"
+                        },
+                        {
+                            "name": "y",
+                            "doc": "TODO\n",
+                            "type": "uint32"
+                        },
+                        {
+                            "name": "width",
+                            "doc": "TODO\n",
+                            "type": "uint32"
+                        },
+                        {
+                            "name": "height",
+                            "doc": "TODO\n",
+                            "type": "uint32"
+                        }
+                    ]
+                },
+                {
+                    "name": "set_vertex_buffer",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "slot",
+                            "doc": "TODO\n",
+                            "type": "uint32"
+                        },
+                        {
+                            "name": "buffer",
+                            "doc": "TODO\n",
+                            "type": "object.buffer",
+                            "optional": true
+                        },
+                        {
+                            "name": "offset",
+                            "doc": "TODO\n",
+                            "type": "uint64"
+                        },
+                        {
+                            "name": "size",
+                            "doc": "TODO\n",
+                            "type": "uint64"
+                        }
+                    ]
+                },
+                {
+                    "name": "set_index_buffer",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "buffer",
+                            "doc": "TODO\n",
+                            "type": "object.buffer"
+                        },
+                        {
+                            "name": "format",
+                            "doc": "TODO\n",
+                            "type": "enum.index_format"
+                        },
+                        {
+                            "name": "offset",
+                            "doc": "TODO\n",
+                            "type": "uint64"
+                        },
+                        {
+                            "name": "size",
+                            "doc": "TODO\n",
+                            "type": "uint64"
+                        }
+                    ]
+                },
+                {
+                    "name": "begin_occlusion_query",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "query_index",
+                            "doc": "TODO\n",
+                            "type": "uint32"
+                        }
+                    ]
+                },
+                {
+                    "name": "end_occlusion_query",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "end",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "set_label",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "label",
+                            "doc": "TODO\n",
+                            "type": "string"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "render_pipeline",
+            "doc": "TODO\n",
+            "methods": [
+                {
+                    "name": "get_bind_group_layout",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "object.bind_group_layout"
+                    },
+                    "args": [
+                        {
+                            "name": "group_index",
+                            "doc": "TODO\n",
+                            "type": "uint32"
+                        }
+                    ]
+                },
+                {
+                    "name": "set_label",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "label",
+                            "doc": "TODO\n",
+                            "type": "string"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "sampler",
+            "doc": "TODO\n",
+            "methods": [
+                {
+                    "name": "set_label",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "label",
+                            "doc": "TODO\n",
+                            "type": "string"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "shader_module",
+            "doc": "TODO\n",
+            "methods": [
+                {
+                    "name": "get_compilation_info",
+                    "doc": "TODO\n",
+                    "returns_async": [
+                        {
+                            "name": "status",
+                            "doc": "TODO\n",
+                            "type": "enum.compilation_info_request_status"
+                        },
+                        {
+                            "name": "compilation_info",
+                            "doc": "TODO\n",
+                            "type": "struct.compilation_info",
+                            "pointer": "immutable"
+                        }
+                    ]
+                },
+                {
+                    "name": "set_label",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "label",
+                            "doc": "TODO\n",
+                            "type": "string"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "surface",
+            "doc": "TODO\n",
+            "methods": [
+                {
+                    "name": "configure",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "config",
+                            "doc": "TODO\n",
+                            "type": "struct.surface_configuration",
+                            "pointer": "immutable"
+                        }
+                    ]
+                },
+                {
+                    "name": "get_capabilities",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "adapter",
+                            "doc": "TODO\n",
+                            "type": "object.adapter"
+                        },
+                        {
+                            "name": "capabilities",
+                            "doc": "TODO\n",
+                            "type": "struct.surface_capabilities",
+                            "pointer": "mutable"
+                        }
+                    ]
+                },
+                {
+                    "name": "get_current_texture",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "surface_texture",
+                            "doc": "TODO\n",
+                            "type": "struct.surface_texture",
+                            "pointer": "mutable"
+                        }
+                    ]
+                },
+                {
+                    "name": "present",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "unconfigure",
+                    "doc": "TODO\n"
+                },
+                {
+                    "name": "set_label",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "label",
+                            "doc": "TODO\n",
+                            "type": "string"
+                        }
+                    ]
+                }
+            ]
+        },
+        {
+            "name": "texture",
+            "doc": "TODO\n",
+            "methods": [
+                {
+                    "name": "create_view",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "object.texture_view"
+                    },
+                    "args": [
+                        {
+                            "name": "descriptor",
+                            "doc": "TODO\n",
+                            "type": "struct.texture_view_descriptor",
+                            "pointer": "immutable",
+                            "optional": true
+                        }
+                    ]
+                },
+                {
+                    "name": "set_label",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "label",
+                            "doc": "TODO\n",
+                            "type": "string"
+                        }
+                    ]
+                },
+                {
+                    "name": "get_width",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "uint32"
+                    }
+                },
+                {
+                    "name": "get_height",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "uint32"
+                    }
+                },
+                {
+                    "name": "get_depth_or_array_layers",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "uint32"
+                    }
+                },
+                {
+                    "name": "get_mip_level_count",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "uint32"
+                    }
+                },
+                {
+                    "name": "get_sample_count",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "uint32"
+                    }
+                },
+                {
+                    "name": "get_dimension",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "enum.texture_dimension"
+                    }
+                },
+                {
+                    "name": "get_format",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "enum.texture_format"
+                    }
+                },
+                {
+                    "name": "get_usage",
+                    "doc": "TODO\n",
+                    "returns": {
+                        "doc": "TODO\n",
+                        "type": "bitflag.texture_usage"
+                    }
+                },
+                {
+                    "name": "destroy",
+                    "doc": "TODO\n"
+                }
+            ]
+        },
+        {
+            "name": "texture_view",
+            "doc": "TODO\n",
+            "methods": [
+                {
+                    "name": "set_label",
+                    "doc": "TODO\n",
+                    "args": [
+                        {
+                            "name": "label",
+                            "doc": "TODO\n",
+                            "type": "string"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
+}

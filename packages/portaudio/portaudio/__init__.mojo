@@ -7,6 +7,7 @@ Copyright (c) 1999-2002 Ross Bencina and Phil Burk
 """
 
 from sys.ffi import external_call
+from ffipointer import FFIPointer
 
 # ===========================
 # Version Information
@@ -18,69 +19,71 @@ fn Pa_GetVersion() -> Int32:
     return external_call["Pa_GetVersion", Int32]()
 
 
-fn Pa_GetVersionText() -> UnsafePointer[UInt8]:
+fn Pa_GetVersionText() -> FFIPointer[UInt8, mut=False]:
     """Retrieve a textual description of the current PortAudio build."""
-    return external_call["Pa_GetVersionText", UnsafePointer[UInt8]]()
+    return external_call["Pa_GetVersionText", FFIPointer[UInt8, mut=False]]()
+
+
 
 
 @fieldwise_init
 struct PaVersionInfo:
-    var versionMajor: Int32
-    var versionMinor: Int32
-    var versionSubMinor: Int32
-    var versionControlRevision: UnsafePointer[UInt8]
-    var versionText: UnsafePointer[UInt8]
+    var version_major: Int32
+    var version_minor: Int32
+    var version_sub_minor: Int32
+    var version_control_revision: FFIPointer[UInt8, mut=False]
+    var version_text: FFIPointer[UInt8, mut=False]
 
 
-fn Pa_GetVersionInfo() -> UnsafePointer[PaVersionInfo]:
+fn Pa_GetVersionInfo() -> FFIPointer[PaVersionInfo, mut=False]:
     """Retrieve version information for the currently running PortAudio build.
     """
-    return external_call["Pa_GetVersionInfo", UnsafePointer[PaVersionInfo]]()
+    return external_call["Pa_GetVersionInfo", FFIPointer[PaVersionInfo, mut=False]]()
 
 
 # ===========================
 # Error Codes
 # ===========================
 
-alias PaError = Int32
+comptime PaError = Int32
 
-alias paNoError: Int32 = 0
-alias paNotInitialized: Int32 = -10000
-alias paUnanticipatedHostError: Int32 = -9999
-alias paInvalidChannelCount: Int32 = -9998
-alias paInvalidSampleRate: Int32 = -9997
-alias paInvalidDevice: Int32 = -9996
-alias paInvalidFlag: Int32 = -9995
-alias paSampleFormatNotSupported: Int32 = -9994
-alias paBadIODeviceCombination: Int32 = -9993
-alias paInsufficientMemory: Int32 = -9992
-alias paBufferTooBig: Int32 = -9991
-alias paBufferTooSmall: Int32 = -9990
-alias paNullCallback: Int32 = -9989
-alias paBadStreamPtr: Int32 = -9988
-alias paTimedOut: Int32 = -9987
-alias paInternalError: Int32 = -9986
-alias paDeviceUnavailable: Int32 = -9985
-alias paIncompatibleHostApiSpecificStreamInfo: Int32 = -9984
-alias paStreamIsStopped: Int32 = -9983
-alias paStreamIsNotStopped: Int32 = -9982
-alias paInputOverflowed: Int32 = -9981
-alias paOutputUnderflowed: Int32 = -9980
-alias paHostApiNotFound: Int32 = -9979
-alias paInvalidHostApi: Int32 = -9978
-alias paCanNotReadFromACallbackStream: Int32 = -9977
-alias paCanNotWriteToACallbackStream: Int32 = -9976
-alias paCanNotReadFromAnOutputOnlyStream: Int32 = -9975
-alias paCanNotWriteToAnInputOnlyStream: Int32 = -9974
-alias paIncompatibleStreamHostApi: Int32 = -9973
-alias paBadBufferPtr: Int32 = -9972
-alias paCanNotInitializeRecursively: Int32 = -9971
+comptime paNoError: Int32 = 0
+comptime paNotInitialized: Int32 = -10000
+comptime paUnanticipatedHostError: Int32 = -9999
+comptime paInvalidChannelCount: Int32 = -9998
+comptime paInvalidSampleRate: Int32 = -9997
+comptime paInvalidDevice: Int32 = -9996
+comptime paInvalidFlag: Int32 = -9995
+comptime paSampleFormatNotSupported: Int32 = -9994
+comptime paBadIODeviceCombination: Int32 = -9993
+comptime paInsufficientMemory: Int32 = -9992
+comptime paBufferTooBig: Int32 = -9991
+comptime paBufferTooSmall: Int32 = -9990
+comptime paNullCallback: Int32 = -9989
+comptime paBadStreamPtr: Int32 = -9988
+comptime paTimedOut: Int32 = -9987
+comptime paInternalError: Int32 = -9986
+comptime paDeviceUnavailable: Int32 = -9985
+comptime paIncompatibleHostApiSpecificStreamInfo: Int32 = -9984
+comptime paStreamIsStopped: Int32 = -9983
+comptime paStreamIsNotStopped: Int32 = -9982
+comptime paInputOverflowed: Int32 = -9981
+comptime paOutputUnderflowed: Int32 = -9980
+comptime paHostApiNotFound: Int32 = -9979
+comptime paInvalidHostApi: Int32 = -9978
+comptime paCanNotReadFromACallbackStream: Int32 = -9977
+comptime paCanNotWriteToACallbackStream: Int32 = -9976
+comptime paCanNotReadFromAnOutputOnlyStream: Int32 = -9975
+comptime paCanNotWriteToAnInputOnlyStream: Int32 = -9974
+comptime paIncompatibleStreamHostApi: Int32 = -9973
+comptime paBadBufferPtr: Int32 = -9972
+comptime paCanNotInitializeRecursively: Int32 = -9971
 
 
-fn Pa_GetErrorText(errorCode: PaError) -> UnsafePointer[UInt8]:
+fn Pa_GetErrorText(errorCode: PaError) -> FFIPointer[UInt8, mut=False]:
     """Translate the supplied PortAudio error code into a human readable message.
     """
-    return external_call["Pa_GetErrorText", UnsafePointer[UInt8], PaError](
+    return external_call["Pa_GetErrorText", FFIPointer[UInt8, mut=False], PaError](
         errorCode
     )
 
@@ -105,11 +108,11 @@ fn Pa_Terminate() -> PaError:
 # Device and Host API Types
 # ===========================
 
-alias PaDeviceIndex = Int32
-alias paNoDevice: PaDeviceIndex = -1
-alias paUseHostApiSpecificDeviceSpecification: PaDeviceIndex = -2
+comptime PaDeviceIndex = Int32
+comptime paNoDevice: PaDeviceIndex = -1
+comptime paUseHostApiSpecificDeviceSpecification: PaDeviceIndex = -2
 
-alias PaHostApiIndex = Int32
+comptime PaHostApiIndex = Int32
 
 
 fn Pa_GetHostApiCount() -> PaHostApiIndex:
@@ -123,42 +126,42 @@ fn Pa_GetDefaultHostApi() -> PaHostApiIndex:
 
 
 # Host API Type IDs
-alias paInDevelopment: Int32 = 0
-alias paDirectSound: Int32 = 1
-alias paMME: Int32 = 2
-alias paASIO: Int32 = 3
-alias paSoundManager: Int32 = 4
-alias paCoreAudio: Int32 = 5
-alias paOSS: Int32 = 7
-alias paALSA: Int32 = 8
-alias paAL: Int32 = 9
-alias paBeOS: Int32 = 10
-alias paWDMKS: Int32 = 11
-alias paJACK: Int32 = 12
-alias paWASAPI: Int32 = 13
-alias paAudioScienceHPI: Int32 = 14
-alias paAudioIO: Int32 = 15
-alias paPulseAudio: Int32 = 16
-alias paSndio: Int32 = 17
+comptime paInDevelopment: Int32 = 0
+comptime paDirectSound: Int32 = 1
+comptime paMME: Int32 = 2
+comptime paASIO: Int32 = 3
+comptime paSoundManager: Int32 = 4
+comptime paCoreAudio: Int32 = 5
+comptime paOSS: Int32 = 7
+comptime paALSA: Int32 = 8
+comptime paAL: Int32 = 9
+comptime paBeOS: Int32 = 10
+comptime paWDMKS: Int32 = 11
+comptime paJACK: Int32 = 12
+comptime paWASAPI: Int32 = 13
+comptime paAudioScienceHPI: Int32 = 14
+comptime paAudioIO: Int32 = 15
+comptime paPulseAudio: Int32 = 16
+comptime paSndio: Int32 = 17
 
-alias PaHostApiTypeId = Int32
+comptime PaHostApiTypeId = Int32
 
 
 @fieldwise_init
 struct PaHostApiInfo:
     var structVersion: Int32
     var type: PaHostApiTypeId
-    var name: UnsafePointer[UInt8]
+    var name: FFIPointer[UInt8, mut=False]
     var deviceCount: Int32
     var defaultInputDevice: PaDeviceIndex
     var defaultOutputDevice: PaDeviceIndex
 
 
-fn Pa_GetHostApiInfo(hostApi: PaHostApiIndex) -> UnsafePointer[PaHostApiInfo]:
+fn Pa_GetHostApiInfo(hostApi: PaHostApiIndex) -> FFIPointer[PaHostApiInfo, mut=False]:
     """Retrieve a pointer to a structure containing information about a specific host API.
     """
     return external_call[
-        "Pa_GetHostApiInfo", UnsafePointer[PaHostApiInfo], PaHostApiIndex
+        "Pa_GetHostApiInfo", FFIPointer[PaHostApiInfo, mut=False], PaHostApiIndex
     ](hostApi)
 
 
@@ -187,13 +190,13 @@ fn Pa_HostApiDeviceIndexToDeviceIndex(
 struct PaHostErrorInfo:
     var hostApiType: PaHostApiTypeId
     var errorCode: Int
-    var errorText: UnsafePointer[UInt8]
+    var errorText: FFIPointer[UInt8, mut=False]
 
 
-fn Pa_GetLastHostErrorInfo() -> UnsafePointer[PaHostErrorInfo]:
+fn Pa_GetLastHostErrorInfo() -> FFIPointer[PaHostErrorInfo, mut=False]:
     """Return information about the last host error encountered."""
     return external_call[
-        "Pa_GetLastHostErrorInfo", UnsafePointer[PaHostErrorInfo]
+        "Pa_GetLastHostErrorInfo", FFIPointer[PaHostErrorInfo, mut=False]
     ]()
 
 
@@ -217,25 +220,25 @@ fn Pa_GetDefaultOutputDevice() -> PaDeviceIndex:
     return external_call["Pa_GetDefaultOutputDevice", PaDeviceIndex]()
 
 
-alias PaTime = Float64
+comptime PaTime = Float64
 
 # Sample Format Flags
-alias PaSampleFormat = UInt
+comptime PaSampleFormat = UInt
 
-alias paFloat32: PaSampleFormat = 0x00000001
-alias paInt32: PaSampleFormat = 0x00000002
-alias paInt24: PaSampleFormat = 0x00000004
-alias paInt16: PaSampleFormat = 0x00000008
-alias paInt8: PaSampleFormat = 0x00000010
-alias paUInt8: PaSampleFormat = 0x00000020
-alias paCustomFormat: PaSampleFormat = 0x00010000
-alias paNonInterleaved: PaSampleFormat = 0x80000000
+comptime paFloat32: PaSampleFormat = 0x00000001
+comptime paInt32: PaSampleFormat = 0x00000002
+comptime paInt24: PaSampleFormat = 0x00000004
+comptime paInt16: PaSampleFormat = 0x00000008
+comptime paInt8: PaSampleFormat = 0x00000010
+comptime paUInt8: PaSampleFormat = 0x00000020
+comptime paCustomFormat: PaSampleFormat = 0x00010000
+comptime paNonInterleaved: PaSampleFormat = 0x80000000
 
 
 @fieldwise_init
 struct PaDeviceInfo:
     var structVersion: Int32
-    var name: UnsafePointer[UInt8]
+    var name: FFIPointer[UInt8, mut=False]
     var hostApi: PaHostApiIndex
     var maxInputChannels: Int32
     var maxOutputChannels: Int32
@@ -246,11 +249,11 @@ struct PaDeviceInfo:
     var defaultSampleRate: Float64
 
 
-fn Pa_GetDeviceInfo(device: PaDeviceIndex) -> UnsafePointer[PaDeviceInfo]:
+fn Pa_GetDeviceInfo(device: PaDeviceIndex) -> FFIPointer[PaDeviceInfo, mut=False]:
     """Retrieve a pointer to a PaDeviceInfo structure containing information about the specified device.
     """
     return external_call[
-        "Pa_GetDeviceInfo", UnsafePointer[PaDeviceInfo], PaDeviceIndex
+        "Pa_GetDeviceInfo", FFIPointer[PaDeviceInfo, mut=False], PaDeviceIndex
     ](device)
 
 
@@ -265,15 +268,15 @@ struct PaStreamParameters:
     var channelCount: Int32
     var sampleFormat: PaSampleFormat
     var suggestedLatency: PaTime
-    var hostApiSpecificStreamInfo: UnsafePointer[NoneType]
+    var hostApiSpecificStreamInfo: FFIPointer[NoneType, mut=False]
 
 
-alias paFormatIsSupported: Int32 = 0
+comptime paFormatIsSupported: Int32 = 0
 
 
 fn Pa_IsFormatSupported(
-    inputParameters: UnsafePointer[PaStreamParameters],
-    outputParameters: UnsafePointer[PaStreamParameters],
+    inputParameters: FFIPointer[PaStreamParameters, mut=False],
+    outputParameters: FFIPointer[PaStreamParameters, mut=False],
     sampleRate: Float64,
 ) -> PaError:
     """Determine whether it would be possible to open a stream with the specified parameters.
@@ -281,8 +284,8 @@ fn Pa_IsFormatSupported(
     return external_call[
         "Pa_IsFormatSupported",
         PaError,
-        UnsafePointer[PaStreamParameters],
-        UnsafePointer[PaStreamParameters],
+        FFIPointer[PaStreamParameters, mut=False],
+        FFIPointer[PaStreamParameters, mut=False],
         Float64,
     ](inputParameters, outputParameters, sampleRate)
 
@@ -297,17 +300,17 @@ struct PaStream:
     pass
 
 
-alias paFramesPerBufferUnspecified: UInt = 0
+comptime paFramesPerBufferUnspecified: UInt = 0
 
 # Stream Flags
-alias PaStreamFlags = UInt
+comptime PaStreamFlags = UInt
 
-alias paNoFlag: PaStreamFlags = 0
-alias paClipOff: PaStreamFlags = 0x00000001
-alias paDitherOff: PaStreamFlags = 0x00000002
-alias paNeverDropInput: PaStreamFlags = 0x00000004
-alias paPrimeOutputBuffersUsingStreamCallback: PaStreamFlags = 0x00000008
-alias paPlatformSpecificFlags: PaStreamFlags = 0xFFFF0000
+comptime paNoFlag: PaStreamFlags = 0
+comptime paClipOff: PaStreamFlags = 0x00000001
+comptime paDitherOff: PaStreamFlags = 0x00000002
+comptime paNeverDropInput: PaStreamFlags = 0x00000004
+comptime paPrimeOutputBuffersUsingStreamCallback: PaStreamFlags = 0x00000008
+comptime paPlatformSpecificFlags: PaStreamFlags = 0xFFFF0000
 
 
 @fieldwise_init
@@ -318,42 +321,42 @@ struct PaStreamCallbackTimeInfo:
 
 
 # Stream Callback Flags
-alias PaStreamCallbackFlags = UInt
+comptime PaStreamCallbackFlags = UInt
 
-alias paInputUnderflow: PaStreamCallbackFlags = 0x00000001
-alias paInputOverflow: PaStreamCallbackFlags = 0x00000002
-alias paOutputUnderflow: PaStreamCallbackFlags = 0x00000004
-alias paOutputOverflow: PaStreamCallbackFlags = 0x00000008
-alias paPrimingOutput: PaStreamCallbackFlags = 0x00000010
+comptime paInputUnderflow: PaStreamCallbackFlags = 0x00000001
+comptime paInputOverflow: PaStreamCallbackFlags = 0x00000002
+comptime paOutputUnderflow: PaStreamCallbackFlags = 0x00000004
+comptime paOutputOverflow: PaStreamCallbackFlags = 0x00000008
+comptime paPrimingOutput: PaStreamCallbackFlags = 0x00000010
 
 # Stream Callback Result
-alias paContinue: Int32 = 0
-alias paComplete: Int32 = 1
-alias paAbort: Int32 = 2
+comptime paContinue: Int32 = 0
+comptime paComplete: Int32 = 1
+comptime paAbort: Int32 = 2
 
 
 fn Pa_OpenStream(
-    stream: UnsafePointer[UnsafePointer[PaStream]],
-    inputParameters: UnsafePointer[PaStreamParameters],
-    outputParameters: UnsafePointer[PaStreamParameters],
+    stream: FFIPointer[FFIPointer[PaStream, mut=True], mut=True],
+    inputParameters: FFIPointer[PaStreamParameters, mut=False],
+    outputParameters: FFIPointer[PaStreamParameters, mut=False],
     sampleRate: Float64,
     framesPerBuffer: UInt,
     streamFlags: PaStreamFlags,
-    streamCallback: UnsafePointer[NoneType],
-    userData: UnsafePointer[NoneType],
+    streamCallback: FFIPointer[NoneType, mut=False],
+    userData: FFIPointer[NoneType, mut=True],
 ) -> PaError:
     """Opens a stream for either input, output or both."""
     return external_call[
         "Pa_OpenStream",
         PaError,
-        UnsafePointer[UnsafePointer[PaStream]],
-        UnsafePointer[PaStreamParameters],
-        UnsafePointer[PaStreamParameters],
+        FFIPointer[FFIPointer[PaStream, mut=True], mut=True],
+        FFIPointer[PaStreamParameters, mut=False],
+        FFIPointer[PaStreamParameters, mut=False],
         Float64,
         UInt,
         PaStreamFlags,
-        UnsafePointer[NoneType],
-        UnsafePointer[NoneType],
+        FFIPointer[NoneType, mut=False],
+        FFIPointer[NoneType, mut=True],
     ](
         stream,
         inputParameters,
@@ -367,28 +370,28 @@ fn Pa_OpenStream(
 
 
 fn Pa_OpenDefaultStream(
-    stream: UnsafePointer[UnsafePointer[PaStream]],
+    stream: FFIPointer[FFIPointer[PaStream, mut=True], mut=True],
     numInputChannels: Int32,
     numOutputChannels: Int32,
     sampleFormat: PaSampleFormat,
     sampleRate: Float64,
     framesPerBuffer: UInt,
-    streamCallback: UnsafePointer[NoneType],
-    userData: UnsafePointer[NoneType],
+    streamCallback: FFIPointer[NoneType, mut=False],
+    userData: FFIPointer[NoneType, mut=True],
 ) -> PaError:
     """A simplified version of Pa_OpenStream() that opens the default input and/or output devices.
     """
     return external_call[
         "Pa_OpenDefaultStream",
         PaError,
-        UnsafePointer[UnsafePointer[PaStream]],
+        FFIPointer[FFIPointer[PaStream, mut=True], mut=True],
         Int32,
         Int32,
         PaSampleFormat,
         Float64,
         UInt,
-        UnsafePointer[NoneType],
-        UnsafePointer[NoneType],
+        FFIPointer[NoneType, mut=False],
+        FFIPointer[NoneType, mut=True],
     ](
         stream,
         numInputChannels,
@@ -401,57 +404,57 @@ fn Pa_OpenDefaultStream(
     )
 
 
-fn Pa_CloseStream(stream: UnsafePointer[PaStream]) -> PaError:
+fn Pa_CloseStream(stream: FFIPointer[PaStream, mut=True]) -> PaError:
     """Closes an audio stream."""
-    return external_call["Pa_CloseStream", PaError, UnsafePointer[PaStream]](
+    return external_call["Pa_CloseStream", PaError, FFIPointer[PaStream, mut=True]](
         stream
     )
 
 
 fn Pa_SetStreamFinishedCallback(
-    stream: UnsafePointer[PaStream],
-    streamFinishedCallback: UnsafePointer[NoneType],
+    stream: FFIPointer[PaStream, mut=True],
+    streamFinishedCallback: FFIPointer[NoneType, mut=False],
 ) -> PaError:
     """Register a stream finished callback function."""
     return external_call[
         "Pa_SetStreamFinishedCallback",
         PaError,
-        UnsafePointer[PaStream],
-        UnsafePointer[NoneType],
+        FFIPointer[PaStream, mut=True],
+        FFIPointer[NoneType, mut=False],
     ](stream, streamFinishedCallback)
 
 
-fn Pa_StartStream(stream: UnsafePointer[PaStream]) -> PaError:
+fn Pa_StartStream(stream: FFIPointer[PaStream, mut=True]) -> PaError:
     """Commences audio processing."""
-    return external_call["Pa_StartStream", PaError, UnsafePointer[PaStream]](
+    return external_call["Pa_StartStream", PaError, FFIPointer[PaStream, mut=True]](
         stream
     )
 
 
-fn Pa_StopStream(stream: UnsafePointer[PaStream]) -> PaError:
+fn Pa_StopStream(stream: FFIPointer[PaStream, mut=True]) -> PaError:
     """Terminates audio processing."""
-    return external_call["Pa_StopStream", PaError, UnsafePointer[PaStream]](
+    return external_call["Pa_StopStream", PaError, FFIPointer[PaStream, mut=True]](
         stream
     )
 
 
-fn Pa_AbortStream(stream: UnsafePointer[PaStream]) -> PaError:
+fn Pa_AbortStream(stream: FFIPointer[PaStream, mut=True]) -> PaError:
     """Terminates audio processing promptly."""
-    return external_call["Pa_AbortStream", PaError, UnsafePointer[PaStream]](
+    return external_call["Pa_AbortStream", PaError, FFIPointer[PaStream, mut=True]](
         stream
     )
 
 
-fn Pa_IsStreamStopped(stream: UnsafePointer[PaStream]) -> PaError:
+fn Pa_IsStreamStopped(stream: FFIPointer[PaStream, mut=False]) -> PaError:
     """Determine whether the stream is stopped."""
     return external_call[
-        "Pa_IsStreamStopped", PaError, UnsafePointer[PaStream]
+        "Pa_IsStreamStopped", PaError, FFIPointer[PaStream, mut=False]
     ](stream)
 
 
-fn Pa_IsStreamActive(stream: UnsafePointer[PaStream]) -> PaError:
+fn Pa_IsStreamActive(stream: FFIPointer[PaStream, mut=False]) -> PaError:
     """Determine whether the stream is active."""
-    return external_call["Pa_IsStreamActive", PaError, UnsafePointer[PaStream]](
+    return external_call["Pa_IsStreamActive", PaError, FFIPointer[PaStream, mut=False]](
         stream
     )
 
@@ -465,72 +468,72 @@ struct PaStreamInfo:
 
 
 fn Pa_GetStreamInfo(
-    stream: UnsafePointer[PaStream],
-) -> UnsafePointer[PaStreamInfo]:
+    stream: FFIPointer[PaStream, mut=False],
+) -> FFIPointer[PaStreamInfo, mut=False]:
     """Retrieve a pointer to a PaStreamInfo structure containing information about the specified stream.
     """
     return external_call[
-        "Pa_GetStreamInfo", UnsafePointer[PaStreamInfo], UnsafePointer[PaStream]
+        "Pa_GetStreamInfo", FFIPointer[PaStreamInfo, mut=False], FFIPointer[PaStream, mut=False]
     ](stream)
 
 
-fn Pa_GetStreamTime(stream: UnsafePointer[PaStream]) -> PaTime:
+fn Pa_GetStreamTime(stream: FFIPointer[PaStream, mut=False]) -> PaTime:
     """Returns the current time in seconds for a stream."""
-    return external_call["Pa_GetStreamTime", PaTime, UnsafePointer[PaStream]](
+    return external_call["Pa_GetStreamTime", PaTime, FFIPointer[PaStream, mut=False]](
         stream
     )
 
 
-fn Pa_GetStreamCpuLoad(stream: UnsafePointer[PaStream]) -> Float64:
+fn Pa_GetStreamCpuLoad(stream: FFIPointer[PaStream, mut=False]) -> Float64:
     """Retrieve CPU usage information for the specified stream."""
     return external_call[
-        "Pa_GetStreamCpuLoad", Float64, UnsafePointer[PaStream]
+        "Pa_GetStreamCpuLoad", Float64, FFIPointer[PaStream, mut=False]
     ](stream)
 
 
 fn Pa_ReadStream(
-    stream: UnsafePointer[PaStream],
-    buffer: UnsafePointer[NoneType],
+    stream: FFIPointer[PaStream, mut=True],
+    buffer: FFIPointer[NoneType, mut=True],
     frames: UInt,
 ) -> PaError:
     """Read samples from an input stream."""
     return external_call[
         "Pa_ReadStream",
         PaError,
-        UnsafePointer[PaStream],
-        UnsafePointer[NoneType],
+        FFIPointer[PaStream, mut=True],
+        FFIPointer[NoneType, mut=True],
         UInt,
     ](stream, buffer, frames)
 
 
 fn Pa_WriteStream(
-    stream: UnsafePointer[PaStream],
-    buffer: UnsafePointer[NoneType],
+    stream: FFIPointer[PaStream, mut=True],
+    buffer: FFIPointer[NoneType, mut=False],
     frames: UInt,
 ) -> PaError:
     """Write samples to an output stream."""
     return external_call[
         "Pa_WriteStream",
         PaError,
-        UnsafePointer[PaStream],
-        UnsafePointer[NoneType],
+        FFIPointer[PaStream, mut=True],
+        FFIPointer[NoneType, mut=False],
         UInt,
     ](stream, buffer, frames)
 
 
-fn Pa_GetStreamReadAvailable(stream: UnsafePointer[PaStream]) -> Int:
+fn Pa_GetStreamReadAvailable(stream: FFIPointer[PaStream, mut=False]) -> Int:
     """Retrieve the number of frames that can be read from the stream without waiting.
     """
     return external_call[
-        "Pa_GetStreamReadAvailable", Int, UnsafePointer[PaStream]
+        "Pa_GetStreamReadAvailable", Int, FFIPointer[PaStream, mut=False]
     ](stream)
 
 
-fn Pa_GetStreamWriteAvailable(stream: UnsafePointer[PaStream]) -> Int:
+fn Pa_GetStreamWriteAvailable(stream: FFIPointer[PaStream, mut=False]) -> Int:
     """Retrieve the number of frames that can be written to the stream without waiting.
     """
     return external_call[
-        "Pa_GetStreamWriteAvailable", Int, UnsafePointer[PaStream]
+        "Pa_GetStreamWriteAvailable", Int, FFIPointer[PaStream, mut=False]
     ](stream)
 
 
