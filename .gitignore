@@ -2,6 +2,7 @@
 # pixi environments
 .pixi
 *.egg-info
+*.conda
 build
 libshader.dylib
 kgen.trace.json.time-trace

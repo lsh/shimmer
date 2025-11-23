@@ -61,11 +61,15 @@ environments:
       - conda: https://conda.anaconda.org/conda-forge/noarch/typing-extensions-4.15.0-h396c80c_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/typing_extensions-4.15.0-pyhcf101f3_0.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/tzdata-2025b-h78e105d_0.conda
-      - conda: git+https://github.com/lsh/wgpu-mojo#fa8934b5b4497fba4aeb97f525a9b860b305513e
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/wgpu-native-22.1.0.5-h5f1966e_1.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/yaml-0.2.5-h925e9cb_3.conda
       - conda: https://conda.anaconda.org/conda-forge/osx-arm64/zeromq-4.3.5-h888dc83_9.conda
       - conda: https://conda.anaconda.org/conda-forge/noarch/zipp-3.23.0-pyhd8ed1ab_0.conda
+      - conda: packages/ffipointer
+      - conda: packages/glfw
+      - conda: packages/kissfft
+      - conda: packages/portaudio
+      - conda: packages/wgpu
 packages:
 - conda: https://conda.anaconda.org/conda-forge/noarch/_python_abi3_support-1.0-hd8ed1ab_2.conda
   sha256: a3967b937b9abf0f2a99f3173fa4630293979bd1644709d89580e7c62a544661
@@ -114,6 +118,19 @@ packages:
   license: Python-2.0
   size: 48397
   timestamp: 1761175097707
+- conda: packages/ffipointer
+  name: ffipointer
+  version: 0.1.0
+  build: h60d57d3_0
+  subdir: osx-arm64
+  depends:
+  - mojo >=0.25.7.0.dev2025110305,<0.26
+  - max >=25.7.0.dev2025110305,<26
+  input:
+    hash: 2a6906e7ad7af7077cb1fd7eb001f269c1dddb2f05469e650c0d8fb05a70017a
+    globs:
+    - recipe.yaml
+    - variants.yaml
 - conda: https://conda.anaconda.org/conda-forge/osx-arm64/glfw-3.4-hc919400_1.conda
   sha256: 1399137b5ca52e73760aeb98235247c90cd4cee43f946aaf39ed69f69a00a956
   md5: 77d80914f04ad95f9ed0338735986b95
@@ -122,6 +139,23 @@ packages:
   license: Zlib
   size: 113494
   timestamp: 1758809831689
+- conda: packages/glfw
+  name: glfw-mojo
+  version: 0.1.0
+  build: h60d57d3_0
+  subdir: osx-arm64
+  depends:
+  - mojo >=0.25.7.0.dev2025110305,<0.26
+  - max >=25.7.0.dev2025110305,<26
+  - ffipointer
+  input:
+    hash: 02bf3a76bbb1f1c83aa0afd26954ac5696278f862df9cab3042c1e885e70a2bd
+    globs:
+    - recipe.yaml
+    - variants.yaml
+  sources:
+    ffipointer:
+      path: ../ffipointer
 - conda: https://conda.anaconda.org/conda-forge/osx-arm64/icu-75.1-hfee45f7_0.conda
   sha256: 9ba12c93406f3df5ab0a43db8a4b4ef67a5871dfd401010fbe29b218b2cbe620
   md5: 5eb22c1d7b3fc4abb50d92d621583137
@@ -173,6 +207,19 @@ packages:
   license_family: BSD
   size: 65503
   timestamp: 1760643864586
+- conda: packages/kissfft
+  name: kissfft-mojo
+  version: 0.1.0
+  build: h60d57d3_0
+  subdir: osx-arm64
+  depends:
+  - mojo >=0.25.7.0.dev2025110305,<0.26
+  - max >=25.7.0.dev2025110305,<26
+  input:
+    hash: 5e1d0bc5da355ae73bda667c9a039beb9f3f6a59abed29a6087b15ba82cfbb72
+    globs:
+    - recipe.yaml
+    - variants.yaml
 - conda: https://conda.anaconda.org/conda-forge/osx-arm64/krb5-1.21.3-h237132a_0.conda
   sha256: 4442f957c3c77d69d9da3521268cad5d54c9033f1a73f99cde0a3658937b159b
   md5: c6dc8a0fdec13a0565936655c33069a1
@@ -532,6 +579,23 @@ packages:
   license_family: MIT
   size: 23625
   timestamp: 1759953252315
+- conda: packages/portaudio
+  name: portaudio-mojo
+  version: 0.1.0
+  build: h60d57d3_0
+  subdir: osx-arm64
+  depends:
+  - mojo >=0.25.7.0.dev2025110305,<0.26
+  - max >=25.7.0.dev2025110305,<26
+  - ffipointer
+  input:
+    hash: b598082ed64067857b8e2a47c1ad1974c8fe6a71efd96b0c0a289cfac3ebd76b
+    globs:
+    - recipe.yaml
+    - variants.yaml
+  sources:
+    ffipointer:
+      path: ../ffipointer
 - conda: https://conda.anaconda.org/conda-forge/osx-arm64/python-3.13.9-hfc2f54d_101_cp313.conda
   build_number: 101
   sha256: 516229f780b98783a5ef4112a5a4b5e5647d4f0177c4621e98aa60bb9bc32f98
@@ -698,12 +762,26 @@ packages:
   license: LicenseRef-Public-Domain
   size: 122968
   timestamp: 1742727099393
-- conda: git+https://github.com/lsh/wgpu-mojo#fa8934b5b4497fba4aeb97f525a9b860b305513e
+- conda: packages/wgpu
   name: wgpu-mojo
   version: 0.1.0
   build: h60d57d3_0
   subdir: osx-arm64
-  channel: null
+  depends:
+  - mojo >=0.25.7.0.dev2025110305,<0.26
+  - max >=25.7.0.dev2025110305,<26
+  - glfw-mojo
+  - ffipointer
+  input:
+    hash: 660508ca62ae4b208973313fee82357d3a63b39ce1889431a5b9ffaf718ab5de
+    globs:
+    - recipe.yaml
+    - variants.yaml
+  sources:
+    ffipointer:
+      path: ../ffipointer
+    glfw-mojo:
+      path: ../glfw
 - conda: https://conda.anaconda.org/conda-forge/osx-arm64/wgpu-native-22.1.0.5-h5f1966e_1.conda
   sha256: 88d7a170c3b7e5e736f99510c6b5a2fb90e62eeb76578234010f439cdbf888b6
   md5: 195179cc98d877876b6961d6ba18e472

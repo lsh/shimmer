@@ -1,0 +1,1503 @@
+import enum
+import json
+import math
+import sys
+from dataclasses import dataclass
+from itertools import filterfalse, tee
+from pathlib import Path
+from types import SimpleNamespace
+from typing import Optional
+
+
+def partition(predicate, iterable):
+    """Partition entries into false entries and true entries.
+
+    If *predicate* is slow, consider wrapping it with functools.lru_cache().
+    """
+    # partition(is_odd, range(10)) → 0 2 4 6 8   and  1 3 5 7 9
+    t1, t2 = tee(iterable)
+    return filterfalse(predicate, t1), filter(predicate, t2)
+
+
+@dataclass
+class Constant:
+    name: str
+    value: str
+    doc: str
+
+
+@dataclass
+class Typedef:
+    name: str
+    doc: str
+    type: str
+
+
+@dataclass
+class EnumEntry:
+    name: str
+    doc: str
+    value: Optional[str]
+
+
+@dataclass
+class Enum:
+    name: str
+    doc: str
+    entries: list[EnumEntry]
+    extended: bool
+
+
+@dataclass
+class BitflagEntry:
+    name: str
+    doc: str
+    value: str
+    value_combination: list[str]
+
+
+@dataclass
+class Bitflag:
+    name: str
+    doc: str
+    entries: list[BitflagEntry]
+    extended: bool
+
+
+class PointerType(enum.StrEnum):
+    MUTABLE = "mutable"
+    IMMUTABLE = "immutable"
+
+
+@dataclass
+class ParameterType:
+    name: str
+    doc: str
+    type: str
+    pointer: Optional[PointerType]
+    optional: bool
+
+
+@dataclass
+class Callback:
+    name: str
+    doc: str
+    style: str
+    args: list[ParameterType]
+
+
+@dataclass
+class Function:
+    name: str
+    doc: str
+    returns: ParameterType
+    args: list[ParameterType]
+    returns_async: list[ParameterType]
+
+
+@dataclass
+class Struct:
+    name: str
+    type: str
+    doc: str
+    free_members: bool
+    members: list[ParameterType]
+
+
+@dataclass
+class Object:
+    name: str
+    doc: str
+    methods: list[Function]
+    extended: bool
+    namespace: str
+
+
+@dataclass
+class Spec:
+    copyright: str
+    name: str
+    enum_prefix: str
+    constants: list[Constant]
+    # currently empty
+    typedefs: list[Typedef]
+    enums: list[Enum]
+    bitflags: list[Bitflag]
+    structs: list[Struct]
+    callbacks: list[Callback]
+    functions: list[Function]
+    objects: list[Object]
+    function_types: list[Function]
+
+
+def load_spec(path: Path) -> Spec:
+    with open(path, "r") as f:
+        return json.load(f, object_hook=lambda d: SimpleNamespace(**d))
+
+
+def gen_enum(entry: Enum) -> str:
+    doc = (
+        "" if entry.doc.strip()
+        == "TODO" else f"""\"\"\"\n    {entry.doc.strip()}\"\"\"\n"""
+    )
+    output = f"""
+@fieldwise_init
+@register_passable("trivial")
+struct {entry.name.title().replace("_", "")}(Copyable, EqualityComparable, ImplicitlyCopyable, Movable, Writable):
+    {doc}
+    var value: UInt32
+
+    fn __eq__(self, rhs: Self) -> Bool:
+        return self.value == rhs.value
+"""
+    for i, e in enumerate(entry.entries):
+        ename = e.name.lower()
+        if (
+            entry.name == "texture_view_dimension"
+            or entry.name == "texture_dimension"
+        ):
+            ename = ename[::-1]
+        output += (
+            f"    comptime {ename} ="
+            f" Self({e.value if hasattr(e, 'value') else i})\n"
+        )
+        if e.doc.strip() != "TODO":
+            output += f'    """{e.doc.strip()}"""\n'
+    output += """\n    fn write_to(self, mut w: Some[Writer]):\n"""
+    for i, e in enumerate(entry.entries):
+        ename = e.name.lower()
+        if (
+            entry.name == "texture_view_dimension"
+            or entry.name == "texture_dimension"
+        ):
+            ename = ename[::-1]
+        output += f"""
+        {"" if i == 0 else "el"}if self == Self.{ename}:
+            w.write("{ename}")
+"""
+
+    return output
+
+
+def gen_bitflag(entry: Bitflag) -> str:
+    doc = (
+        "" if entry.doc.strip()
+        == "TODO" else f"""\"\"\"\n    {entry.doc.strip()}\"\"\"\n"""
+    )
+    output = f"""
+@fieldwise_init
+@register_passable("trivial")
+struct {entry.name.title().replace("_", "")}(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
+    {doc}
+    var value: UInt32
+
+    fn __eq__(self, rhs: Self) -> Bool:
+        return self.value == rhs.value
+
+    fn __ne__(self, rhs: Self) -> Bool:
+        return self.value != rhs.value
+
+    fn __xor__(self, rhs: Self) -> Self:
+        return Self(self.value ^ rhs.value)
+
+    fn __and__(self, rhs: Self) -> Self:
+        return Self(self.value & rhs.value)
+
+    fn __or__(self, rhs: Self) -> Self:
+        return Self(self.value | rhs.value)
+
+    fn __invert__(self) -> Self:
+        return Self(~self.value)
+
+"""
+    for i, e in enumerate(entry.entries):
+        if hasattr(e, "value_combination"):
+            combination = " | ".join(
+                f"Self.{val}" for val in e.value_combination
+            )
+            output += f"    comptime {e.name.lower()} = {combination}\n"
+        else:
+            output += (
+                f"    comptime {e.name.lower()} ="
+                f" Self({int(math.pow(2, int(e.value) if hasattr(e, 'value') else i - 1))})\n"
+            )
+        if e.doc.strip() != "TODO":
+            output += f'    """{e.doc.strip()}"""\n'
+    return output
+
+
+def gen_constant(entry: Constant) -> str:
+    match entry.value:
+        case "uint32_max":
+            val = "UInt32.MAX"
+        case "uint64_max":
+            val = "UInt64.MAX"
+        case "usize_max":
+            val = "Int.MAX"
+        case _:
+            val = entry.value
+
+    doc = (
+        "" if entry.doc.strip()
+        == "TODO" else f"""\"\"\"\n{entry.doc.strip()}\"\"\"\n"""
+    )
+    return f"""
+comptime {entry.name.upper()} = {val}
+{doc}
+"""
+
+
+def sanitize_name(
+    name: str,
+    object_pointer: bool = True,
+    struct_pointer: bool = False,
+    with_origin: bool = False,
+) -> str:
+    if name.startswith("enum."):
+        return name.removeprefix("enum.").title().replace("_", "")
+    elif name.startswith("bitflag."):
+        return name.removeprefix("bitflag.").title().replace("_", "")
+    elif name.startswith("struct."):
+        if struct_pointer:
+            n = name.removeprefix("struct.").title().replace("_", "")
+            if with_origin:
+                return f"FFIPointer[WGPU{n}, mut=True]"
+            else:
+                return f"FFIPointer[WGPU{n}]"
+        else:
+            return "WGPU" + name.removeprefix("struct.").title().replace(
+                "_", ""
+            )
+    elif name.startswith("function_type."):
+        return name.removeprefix("function_type.").title().replace("_", "")
+    elif name.startswith("object."):
+        if object_pointer:
+            n = name.removeprefix("object.").title().replace("_", "")
+            return f"WGPU{n}"
+        else:
+            return name.removeprefix("object.").title().replace("_", "")
+    elif name == "string":
+        return "FFIPointer[Int8, mut=False]"
+    elif name == "uint32":
+        return "UInt32"
+    elif name == "uint16":
+        return "UInt16"
+    elif name == "int16":
+        return "Int16"
+    elif name == "uint64":
+        return "UInt64"
+    elif name == "int32":
+        return "Int32"
+    elif name == "int64":
+        return "Int64"
+    elif name == "bool":
+        return "Bool"
+    elif name == "float32":
+        return "Float32"
+    elif name == "float64":
+        return "Float64"
+    elif name == "usize":
+        return "Int"
+    elif name == "c_void":
+        return "FFIPointer[NoneType, mut=True]"
+    else:
+        return name
+
+
+def gen_parameter_type(
+    entry: ParameterType,
+    *,
+    default_assign: bool = False,
+    type_only: bool = False,
+    object_pointer: bool = True,
+    struct_pointer: bool = False,
+    in_function: bool = False,
+    with_origin: bool = False,
+) -> str:
+    ty = sanitize_name(
+        entry.type,
+        object_pointer=object_pointer,
+        struct_pointer=struct_pointer,
+        with_origin=with_origin,
+    )
+    if hasattr(entry, "pointer"):
+        if "array<" in entry.type:
+            ty = sanitize_name(
+                entry.type.removeprefix("array<").removesuffix(">"),
+                object_pointer=object_pointer,
+                struct_pointer=struct_pointer,
+                with_origin=with_origin,
+            )
+            if with_origin:
+                mutability = "True" if entry.pointer == "mutable" else "False"
+                ty = f"FFIPointer[{ty}, mut={mutability}]"
+            else:
+                ty = f"FFIPointer[{ty}]"
+        else:
+            ty = f"{ty}"
+
+    if type_only:
+        if in_function and entry.type.startswith("array<"):
+            return f"Int32, {ty}"
+        return ty
+    res = f"""{entry.name}: {ty}"""
+    if in_function and entry.type.startswith("array<"):
+        res = (
+            f"{entry.name[:-1]}_count:"
+            f" Int{' = Int()' if hasattr(entry, 'optional') else ''}, {res}"
+        )
+    if hasattr(entry, "optional") and default_assign:
+        res = f"{res} = {{}}"
+    return res
+
+
+def gen_function(
+    entry: Function,
+    contains_self: bool = False,
+    type: Optional[str] = None,
+    prefix: Optional[str] = None,
+) -> str:
+    args = entry.args if hasattr(entry, "args") else []
+    args_ordered = partition(lambda x: hasattr(x, "optional"), args)
+    params_pre_opt = ", ".join(
+        gen_parameter_type(
+            e,
+            default_assign=True,
+            in_function=True,
+            struct_pointer=True,
+            with_origin=True,
+        )
+        for e in args_ordered[0]
+    )
+    params_post_opt = ", ".join(
+        gen_parameter_type(
+            e,
+            default_assign=True,
+            in_function=True,
+            struct_pointer=True,
+            with_origin=True,
+        )
+        for e in args_ordered[1]
+    )
+
+    if hasattr(entry, "returns_async"):
+        ret_async = entry.returns_async
+        cb_params = ", ".join(
+            gen_parameter_type(
+                e,
+                default_assign=True,
+                type_only=True,
+                struct_pointer=True,
+                in_function=True,
+                with_origin=True,
+            )
+            for e in ret_async
+        )
+        cb_params += ", FFIPointer[NoneType, mut=True]"
+        cb_params_arg = ", ".join(
+            gen_parameter_type(
+                e,
+                default_assign=True,
+                object_pointer=True,
+                type_only=True,
+                struct_pointer=True,
+                in_function=True,
+                with_origin=True,
+            )
+            for e in ret_async
+        )
+        cb_params_arg += ", FFIPointer[NoneType, mut=True]"
+        params = ", ".join(
+            a
+            for a in [
+                params_pre_opt,
+                (
+                    f"callback: fn({cb_params_arg}) -> None, user_data:"
+                    " FFIPointer[NoneType, mut=True]"
+                ),
+                params_post_opt,
+            ]
+            if a
+        )
+    else:
+        params = ", ".join(a for a in [params_pre_opt, params_post_opt] if a)
+        ret_async = None
+
+    if contains_self:
+        params = f"handle: WGPU{type}, {params}"
+    try:
+        ret = gen_parameter_type(
+            entry.returns, type_only=True, object_pointer=True, with_origin=True
+        )
+    except:
+        ret = "None"
+    arg_names = [
+        [f"{e.name[:-1]}_count", e.name] if e.type.startswith("array<") else [
+            e.name
+        ]
+        for e in args
+    ]
+    arg_names = [arg for arg_item in arg_names for arg in arg_item]
+    if contains_self:
+        arg_names.insert(0, "handle")
+    if ret_async:
+        arg_names.append("callback")
+        arg_names.append("user_data")
+    call_args = ", ".join(arg_names)
+    types = ", ".join(f"type_of({arg})" for arg in arg_names)
+    doc = (
+        "" if entry.doc.strip()
+        == "TODO" else f"""\"\"\"\n    {entry.doc.strip()}\"\"\"\n"""
+    )
+    return f"""
+fn {prefix + "_" if prefix else ""}{entry.name}({params}) -> {ret}:
+    {doc}
+    {"return" if ret != "None" else "_ = "} external_call["wgpu{type or ""}{entry.name.title().replace("_", "")}", {ret if ret != "None" else "NoneType"}, {types}]({call_args})
+"""
+
+
+def gen_callback(entry: Callback):
+    args = entry.args if hasattr(entry, "args") else []
+    params_no_default = ", ".join(
+        gen_parameter_type(e, type_only=True, in_function=True) for e in args
+    )
+    return (
+        f"\ncomptime {entry.name}_callback = fn({params_no_default}) -> None\n"
+    )
+
+
+def gen_object(entry: Object) -> str:
+    name = entry.name.title().replace("_", "")
+    output = f"""
+struct _{name}Impl:
+    pass
+comptime WGPU{name} = FFIPointer[_{name}Impl, mut=True]
+
+fn {entry.name}_release(handle: WGPU{name}):
+    _ = external_call["wgpu{name}Release", NoneType, type_of(handle)](handle)
+"""
+    for method in entry.methods:
+        output += gen_function(
+            method, type=name, contains_self=True, prefix=entry.name
+        )
+    return output
+
+
+def gen_struct(entry: Struct) -> str:
+    doc = (
+        "" if entry.doc.strip()
+        == "TODO" else f"""    \"\"\"\n    {entry.doc.strip()}\n    \"\"\"\n"""
+    )
+    output = f"""
+struct WGPU{entry.name.title().replace("_", "")}(Copyable, ImplicitlyCopyable, Movable):
+{doc}"""
+    if entry.type == "base_in":
+        output += "    var next_in_chain: FFIPointer[ChainedStruct, mut=True]\n"
+    elif entry.type == "base_out":
+        output += (
+            "    var next_in_chain: FFIPointer[ChainedStructOut, mut=True]\n"
+        )
+    elif entry.type == "extension_in":
+        output += "    var chain: ChainedStruct\n"
+    elif entry.type == "extension_out":
+        output += "    var chain: ChainedStructOut\n"
+    members = entry.members if hasattr(entry, "members") else []
+    for member in members:
+        if member.type.startswith("function_type."):
+            output += f"    var {member.name}: FFIPointer[NoneType, mut=True]\n"
+        elif member.type.startswith("array<"):
+            output += f"    var {member.name[:-1]}_count: Int\n"
+            output += (
+                "    var"
+                f" {gen_parameter_type(member, struct_pointer=False, with_origin=True)}\n"
+            )
+        else:
+            output += (
+                "    var"
+                f" {gen_parameter_type(member, struct_pointer=hasattr(member, 'pointer'), with_origin=True)}\n"
+            )
+    output += "\n    fn __init__(out self,\n"
+    if entry.type == "base_in":
+        output += (
+            "        next_in_chain: FFIPointer[ChainedStruct, mut=True] = {},\n"
+        )
+    elif entry.type == "base_out":
+        output += (
+            "        next_in_chain: FFIPointer[ChainedStructOut, mut=True] ="
+            " {},\n"
+        )
+    elif entry.type == "extension_in":
+        output += "        chain: ChainedStruct = {},\n"
+    elif entry.type == "extension_out":
+        output += "        chain: ChainedStructOut = {}\n"
+    for member in members:
+        if member.type.startswith("enum.") or member.type.startswith(
+            "bitflag."
+        ):
+            ty = gen_parameter_type(member, type_only=True, with_origin=True)
+            output += f"\n        {member.name}: {ty} = {ty}(0),\n"
+        elif member.type == "bool":
+            output += f"\n        {member.name}: Bool = False,"
+        elif member.type.startswith("function_type."):
+            output += (
+                f"\n        {member.name}: FFIPointer[NoneType, mut=True] ="
+                " {},\n"
+            )
+        elif member.type.startswith("array<"):
+            ty = gen_parameter_type(
+                member, type_only=True, struct_pointer=False, with_origin=True
+            )
+            output += f"\n        {member.name[:-1]}_count: Int = Int(),\n"
+            output += f"\n        {member.name}: {ty} = {{}},\n"
+        else:
+            ty = gen_parameter_type(
+                member,
+                type_only=True,
+                struct_pointer=hasattr(member, "pointer"),
+                with_origin=True,
+            )
+            owned = (
+                "var " if member.type.startswith("struct.")
+                and not hasattr(member, "pointer") else ""
+            )
+            output += f"\n        {owned}{member.name}: {ty} = {{}},\n"
+    output += "    ):\n"
+    if entry.type == "base_in":
+        output += "        self.next_in_chain = next_in_chain\n"
+    elif entry.type == "base_out":
+        output += "        self.next_in_chain = next_in_chain\n"
+    elif entry.type == "extension_in":
+        output += "        self.chain = chain\n"
+    elif entry.type == "extension_out":
+        output += "        self.chain = chain\n"
+    for member in members:
+        take = (
+            "^" if member.type.startswith("struct")
+            and not hasattr(member, "pointer") else ""
+        )
+        if member.type.startswith("array<"):
+            output += (
+                f"        self.{member.name[:-1]}_count ="
+                f" {member.name[:-1]}_count\n"
+            )
+        output += f"        self.{member.name} = {member.name}{take}\n"
+
+    return output
+
+
+def gen_function_type(entry: Function) -> str:
+    cb_params_arg = ", ".join(
+        gen_parameter_type(
+            e,
+            default_assign=True,
+            object_pointer=True,
+            type_only=True,
+            struct_pointer=True,
+        )
+        for e in entry.args
+    )
+    cb_params_arg += ", FFIPointer[NoneType, mut=True]"
+    return (
+        f"comptime {entry.name.title().replace('_', '')} = fn({cb_params_arg})"
+        " -> None\n"
+    )
+
+
+if __name__ == "__main__":
+    spec_path = Path.cwd() / (sys.argv[1])
+    spec = load_spec(spec_path)
+    enums = "\n".join(gen_enum(e) for e in spec.enums)
+    enums += """
+
+# WGPU SPECIFIC ENUMS
+
+
+@fieldwise_init
+@register_passable("trivial")
+struct NativeSType(Copyable, ImplicitlyCopyable, Movable, EqualityComparable):
+    var value: UInt32
+
+    fn __eq__(self, rhs: Self) -> Bool:
+        return self.value == rhs.value
+
+    #  Start at 0003 since that's allocated range for wgpu-native
+    comptime device_extras = Self(0x00030001)
+    comptime required_limits_extras = Self(0x00030002)
+    comptime pipeline_layout_extras = Self(0x00030003)
+    comptime shader_module_glsl_descriptor = Self(0x00030004)
+    comptime supported_limits_extras = Self(0x00030005)
+    comptime instance_extras = Self(0x00030006)
+    comptime bind_group_entry_extras = Self(0x00030007)
+    comptime bind_group_layout_entry_extras = Self(0x00030008)
+    comptime query_set_descriptor_extras = Self(0x00030009)
+    comptime surface_configuration_extras = Self(0x0003000A)
+
+
+@fieldwise_init
+@register_passable("trivial")
+struct NativeFeature(Copyable, ImplicitlyCopyable, Movable, EqualityComparable):
+    var value: Int
+
+    fn __eq__(self, rhs: Self) -> Bool:
+        return self.value == rhs.value
+
+    comptime push_constants = Self(0x00030001)
+    comptime texture_adapter_specific_format_features = Self(0x00030002)
+    comptime multi_draw_indirect = Self(0x00030003)
+    comptime multi_draw_indirect_count = Self(0x00030004)
+    comptime vertex_writable_storage = Self(0x00030005)
+    comptime texture_binding_array = Self(0x00030006)
+    comptime sampled_texture_and_storage_buffer_array_non_uniform_indexing = Self(
+        0x00030007
+    )
+    comptime pipeline_statistics_query = Self(0x00030008)
+    comptime storage_resource_binding_array = Self(0x00030009)
+    comptime partially_bound_binding_array = Self(0x0003000A)
+    comptime texture_format_16_bit_norm = Self(0x0003000B)
+    comptime texture_compression_astc_hdr = Self(0x0003000C)
+    # TODO: requires wgpu.h api change
+    # comptime timestamp_query_inside_passes = Self(0x0003000D)
+    comptime mappable_primary_buffers = Self(0x0003000E)
+    comptime buffer_binding_array = Self(0x0003000F)
+    comptime uniform_buffer_and_storage_texture_array_non_uniform_indexing = Self(
+        0x00030010
+    )
+    # TODO: requires wgpu.h api change
+    # comptime address_mode_clamp_to_zero = Self(0x00030011)
+    # comptime address_mode_clamp_to_border = Self(0x00030012)
+    # comptime polygon_mode_line = Self(0x00030013)
+    # comptime polygon_mode_point = Self(0x00030014)
+    # comptime conservative_rasterization = Self(0x00030015)
+    # comptime clear_texture = Self(0x00030016)
+    # comptime spirv_shader_passthrough = Self(0x00030017)
+    # comptime multiview = Self(0x00030018)
+    comptime vertex_attribute_64_bit = Self(0x00030019)
+    comptime texture_format_nv_12 = Self(0x0003001A)
+    comptime ray_tracing_acceleration_structure = Self(0x0003001B)
+    comptime ray_query = Self(0x0003001C)
+    comptime shader_f64 = Self(0x0003001D)
+    comptime shader_i16 = Self(0x0003001E)
+    comptime shader_primitive_index = Self(0x0003001F)
+    comptime shader_early_depth_test = Self(0x00030020)
+
+
+@fieldwise_init
+@register_passable("trivial")
+struct LogLevel(Copyable, ImplicitlyCopyable, Movable, EqualityComparable):
+    var value: Int
+
+    fn __eq__(self, rhs: Self) -> Bool:
+        return self.value == rhs.value
+
+    comptime off = Self(0x00000000)
+    comptime error = Self(0x00000001)
+    comptime warn = Self(0x00000002)
+    comptime info = Self(0x00000003)
+    comptime debug = Self(0x00000004)
+    comptime trace = Self(0x00000005)
+
+
+@fieldwise_init
+@register_passable("trivial")
+struct NativeTextureFormat(Copyable, ImplicitlyCopyable, Movable, EqualityComparable):
+    var value: UInt32
+
+    fn __eq__(self, rhs: Self) -> Bool:
+        return self.value == rhs.value
+
+    # From Features::TEXTURE_FORMAT_16BIT_NORM
+    comptime r_16_unorm = Self(0x00030001)
+    comptime r_16_snorm = Self(0x00030002)
+    comptime rg_16_unorm = Self(0x00030003)
+    comptime rg_16_snorm = Self(0x00030004)
+    comptime rgba_16_unorm = Self(0x00030005)
+    comptime rgba_16_snorm = Self(0x00030006)
+    # From Features::TEXTURE_FORMAT_NV12
+    comptime nv_12 = Self(0x00030007)
+"""
+    with open("wgpu/enums.mojo", "w+") as f:
+        f.write(enums)
+    structs = "\n".join(gen_struct(e) for e in spec.structs)
+    bitflags = "\n".join(gen_bitflag(e) for e in spec.bitflags)
+    bitflags += """
+
+# WGPU SPECIFIC BITFLAGS
+
+@fieldwise_init
+struct InstanceBackend(Copyable, ImplicitlyCopyable, Movable, EqualityComparable):
+    var value: UInt32
+
+    fn __eq__(self, rhs: Self) -> Bool:
+        return self.value == rhs.value
+
+    fn __xor__(self, rhs: Self) -> Self:
+        return Self(self.value ^ rhs.value)
+
+    fn __and__(self, rhs: Self) -> Self:
+        return Self(self.value & rhs.value)
+
+    fn __or__(self, rhs: Self) -> Self:
+        return Self(self.value | rhs.value)
+
+    fn __invert__(self) -> Self:
+        return Self(~self.value)
+
+    comptime all = Self(0x00000000)
+    comptime vulkan = Self(1 << 0)
+    comptime gl = Self(1 << 1)
+    comptime metal = Self(1 << 2)
+    comptime dx12 = Self(1 << 3)
+    comptime dx11 = Self(1 << 4)
+    comptime browser_webgpu = Self(1 << 5)
+    comptime primary = Self.vulkan | Self.metal | Self.dx12 | Self.browser_webgpu
+    comptime secondary = Self.gl | Self.dx11
+
+
+@fieldwise_init
+struct InstanceFlag(Copyable, ImplicitlyCopyable, Movable, EqualityComparable):
+    var value: UInt32
+
+    fn __eq__(self, rhs: Self) -> Bool:
+        return self.value == rhs.value
+
+    fn __xor__(self, rhs: Self) -> Self:
+        return Self(self.value ^ rhs.value)
+
+    fn __and__(self, rhs: Self) -> Self:
+        return Self(self.value & rhs.value)
+
+    fn __or__(self, rhs: Self) -> Self:
+        return Self(self.value | rhs.value)
+
+    fn __invert__(self) -> Self:
+        return Self(~self.value)
+
+    comptime default = Self(0x00000000)
+    comptime debug = Self(1 << 0)
+    comptime validation = Self(1 << 1)
+    comptime discard_hal_labels = Self(1 << 2)
+
+
+@fieldwise_init
+struct Dx12Compiler(Copyable, ImplicitlyCopyable, Movable, EqualityComparable):
+    var value: UInt32
+
+    fn __eq__(self, rhs: Self) -> Bool:
+        return self.value == rhs.value
+
+    fn __xor__(self, rhs: Self) -> Self:
+        return Self(self.value ^ rhs.value)
+
+    fn __and__(self, rhs: Self) -> Self:
+        return Self(self.value & rhs.value)
+
+    fn __or__(self, rhs: Self) -> Self:
+        return Self(self.value | rhs.value)
+
+    fn __invert__(self) -> Self:
+        return Self(~self.value)
+
+    comptime undefined = Self(0x00000000)
+    comptime fxc = Self(0x00000001)
+    comptime dxc = Self(0x00000002)
+
+
+@fieldwise_init
+struct Gles3MinorVersion(Copyable, ImplicitlyCopyable, Movable, EqualityComparable):
+    var value: UInt32
+
+    fn __eq__(self, rhs: Self) -> Bool:
+        return self.value == rhs.value
+
+    fn __xor__(self, rhs: Self) -> Self:
+        return Self(self.value ^ rhs.value)
+
+    fn __and__(self, rhs: Self) -> Self:
+        return Self(self.value & rhs.value)
+
+    fn __or__(self, rhs: Self) -> Self:
+        return Self(self.value | rhs.value)
+
+    fn __invert__(self) -> Self:
+        return Self(~self.value)
+
+    comptime automatic = Self(0x00000000)
+    comptime version0 = Self(0x00000001)
+    comptime version1 = Self(0x00000002)
+    comptime version2 = Self(0x00000003)
+
+
+@fieldwise_init
+struct PipelineStatisticName(Copyable, ImplicitlyCopyable, Movable, EqualityComparable):
+    var value: UInt32
+
+    fn __eq__(self, rhs: Self) -> Bool:
+        return self.value == rhs.value
+
+    fn __xor__(self, rhs: Self) -> Self:
+        return Self(self.value ^ rhs.value)
+
+    fn __and__(self, rhs: Self) -> Self:
+        return Self(self.value & rhs.value)
+
+    fn __or__(self, rhs: Self) -> Self:
+        return Self(self.value | rhs.value)
+
+    fn __invert__(self) -> Self:
+        return Self(~self.value)
+
+    comptime vertex_shader_invocations = Self(0x00000000)
+    comptime clipper_invocations = Self(0x00000001)
+    comptime clipper_primitives_out = Self(0x00000002)
+    comptime fragment_shader_invocations = Self(0x00000003)
+    comptime compute_shader_invocations = Self(0x00000004)
+
+
+@fieldwise_init
+struct NativeQueryType(Copyable, ImplicitlyCopyable, Movable, EqualityComparable):
+    var value: UInt32
+
+    fn __eq__(self, rhs: Self) -> Bool:
+        return self.value == rhs.value
+
+    fn __xor__(self, rhs: Self) -> Self:
+        return Self(self.value ^ rhs.value)
+
+    fn __and__(self, rhs: Self) -> Self:
+        return Self(self.value & rhs.value)
+
+    fn __or__(self, rhs: Self) -> Self:
+        return Self(self.value | rhs.value)
+
+    fn __invert__(self) -> Self:
+        return Self(~self.value)
+
+    comptime pipeline_statistics = Self(0x00030000)
+"""
+    with open("wgpu/bitflags.mojo", "w+") as f:
+        f.write(bitflags)
+    constants = "\n".join(gen_constant(e) for e in spec.constants)
+    with open("wgpu/constants.mojo", "w+") as f:
+        f.write(constants)
+    functions = "\n".join(gen_function(e) for e in spec.functions)
+    objects = "\n".join(gen_object(e) for e in spec.objects)
+    function_types = "\n".join(
+        gen_function_type(e) for e in spec.function_types
+    )
+    output = """
+from ffpointer import FFIPointer
+
+from sys.ffi import external_call
+from .enums import *
+from .bitflags import *
+from .constants import *
+
+
+struct ChainedStruct(Copyable, ImplicitlyCopyable, Movable):
+    var next: FFIPointer[Self, mut=True]
+    var s_type: SType
+
+    fn __init__(out self, next: FFIPointer[Self, mut=True] = {}, s_type: SType = SType.invalid):
+        self.next = next
+        self.s_type = s_type
+
+struct ChainedStructOut(Copyable, ImplicitlyCopyable, Movable):
+    var next: FFIPointer[Self, mut=True]
+    var s_type: SType
+
+    fn __init__(out self, next: FFIPointer[Self, mut=True] = {}, s_type: SType = SType.invalid):
+        self.next = next
+        self.s_type = s_type
+"""
+    output += "\n".join([objects, structs, functions, function_types])
+    output += """
+
+# WGPU SPECIFIC DEFS
+
+struct WGPUInstanceExtras(Copyable, ImplicitlyCopyable, Movable):
+    var chain: ChainedStruct
+    var backends: InstanceBackend
+    var flags: InstanceFlag
+    var dx12_shader_compiler: Dx12Compiler
+    var gl_es_3_minor_version: Gles3MinorVersion
+    var dxil_path: FFIPointer[Int8, mut=False]
+    var dxc_path: FFIPointer[Int8, mut=False]
+
+    fn __init__(
+        out self,
+        chain: ChainedStruct = ChainedStruct(),
+        backends: InstanceBackend = InstanceBackend.all,
+        flags: InstanceFlag = InstanceFlag.default,
+        dx12_shader_compiler: Dx12Compiler = Dx12Compiler.undefined,
+        gl_es_3_minor_version: Gles3MinorVersion = Gles3MinorVersion.automatic,
+        dxil_path: FFIPointer[Int8, mut=False] = {},
+        dxc_path: FFIPointer[Int8, mut=False] = {},
+    ):
+        self.chain = chain
+        self.backends = backends
+        self.flags = flags
+        self.dx12_shader_compiler = dx12_shader_compiler
+        self.gl_es_3_minor_version = gl_es_3_minor_version
+        self.dxil_path = dxil_path
+        self.dxc_path = dxc_path
+
+
+struct WGPUDeviceExtras(Copyable, ImplicitlyCopyable, Movable):
+    var chain: ChainedStruct
+    var trace_path: FFIPointer[Int8, mut=False]
+
+    fn __init__(
+        out self,
+        chain: ChainedStruct = ChainedStruct(),
+        trace_path: FFIPointer[Int8, mut=False] = {},
+    ):
+        self.chain = chain
+        self.trace_path = trace_path
+
+
+struct WGPUNativeLimits(Copyable, ImplicitlyCopyable, Movable):
+    var max_push_constant_size: UInt32
+    var max_non_sampler_bindings: UInt32
+
+    fn __init__(
+        out self,
+        max_push_constant_size: UInt32 = 0,
+        max_non_sampler_bindings: UInt32 = 0,
+    ):
+        self.max_push_constant_size = max_push_constant_size
+        self.max_non_sampler_bindings = max_non_sampler_bindings
+
+
+struct WGPURequiredLimitsExtras(Copyable, ImplicitlyCopyable, Movable):
+    var chain: ChainedStruct
+    var limits: WGPUNativeLimits
+
+    fn __init__(
+        out self,
+        chain: ChainedStruct = ChainedStruct(),
+        limits: WGPUNativeLimits = WGPUNativeLimits(),
+    ):
+        self.chain = chain
+        self.limits = limits
+
+
+struct WGPUSupportedLimitsExtras(Copyable, ImplicitlyCopyable, Movable):
+    var chain: ChainedStruct
+    var limits: WGPUNativeLimits
+
+    fn __init__(
+        out self,
+        chain: ChainedStruct = ChainedStruct(),
+        limits: WGPUNativeLimits = WGPUNativeLimits(),
+    ):
+        self.chain = chain
+        self.limits = limits
+
+
+struct WGPUPushConstantRange(Copyable, ImplicitlyCopyable, Movable):
+    var stages: ShaderStage
+    var start: UInt32
+    var end: UInt32
+
+    fn __init__(
+        out self,
+        stages: ShaderStage = ShaderStage.none,
+        start: UInt32 = 0,
+        end: UInt32 = 0,
+    ):
+        self.stages = stages
+        self.start = start
+        self.end = end
+
+
+struct WGPUPipelineLayoutExtras(Copyable, ImplicitlyCopyable, Movable):
+    var chain: ChainedStruct
+    var push_constant_range_count: Int
+    var push_constant_ranges: FFIPointer[WGPUPushConstantRange, mut=True]
+
+    fn __init__(
+        out self,
+        chain: ChainedStruct = ChainedStruct(),
+        push_constant_range_count: Int = 0,
+        push_constant_ranges: FFIPointer[
+            WGPUPushConstantRange, mut=True
+        ] = {},
+    ):
+        self.chain = chain
+        self.push_constant_range_count = push_constant_range_count
+        self.push_constant_ranges = push_constant_ranges
+
+
+comptime WGPUSubmissionIndex = UInt64
+
+
+struct WGPUWrappedSubmissionIndex(Copyable, ImplicitlyCopyable, Movable):
+    var queue: WGPUQueue
+    var submission_index: WGPUSubmissionIndex
+
+    fn __init__(
+        out self,
+        queue: WGPUQueue = WGPUQueue(),
+        submission_index: WGPUSubmissionIndex = WGPUSubmissionIndex(),
+    ):
+        self.queue = queue
+        self.submission_index = submission_index
+
+
+struct WGPUShaderDefine(Copyable, ImplicitlyCopyable, Movable):
+    var name: FFIPointer[Int8, mut=False]
+    var value: FFIPointer[Int8, mut=False]
+
+    fn __init__(
+        out self,
+        name: FFIPointer[Int8, mut=False] = {},
+        value: FFIPointer[Int8, mut=False] = {},
+    ):
+        self.name = name
+        self.value = value
+
+
+struct WGPUShaderModuleGLSLDescriptor(Copyable, ImplicitlyCopyable, Movable):
+    var chain: ChainedStruct
+    var stage: ShaderStage
+    var code: FFIPointer[Int8, mut=False]
+    var define_count: UInt32
+    var defines: FFIPointer[WGPUShaderDefine, mut=True]
+
+    fn __init__(
+        out self,
+        chain: ChainedStruct = ChainedStruct(),
+        stage: ShaderStage = ShaderStage.none,
+        code: FFIPointer[Int8, mut=False] = {},
+        define_count: UInt32 = 0,
+        defines: FFIPointer[WGPUShaderDefine, mut=True] = {},
+    ):
+        self.chain = chain
+        self.stage = stage
+        self.code = code
+        self.define_count = define_count
+        self.defines = defines
+
+
+struct WGPURegistryReport(Copyable, ImplicitlyCopyable, Movable):
+    var num_allocated: Int
+    var num_kept_from_user: Int
+    var num_released_from_user: Int
+    var num_error: Int
+    var element_size: Int
+
+    fn __init__(
+        out self,
+        num_allocated: Int = 0,
+        num_kept_from_user: Int = 0,
+        num_released_from_user: Int = 0,
+        num_error: Int = 0,
+        element_size: Int = 0,
+    ):
+        self.num_allocated = num_allocated
+        self.num_kept_from_user = num_kept_from_user
+        self.num_released_from_user = num_released_from_user
+        self.num_error = num_error
+        self.element_size = element_size
+
+
+struct WGPUHubReport(Copyable, ImplicitlyCopyable, Movable):
+    var adapters: WGPURegistryReport
+    var devices: WGPURegistryReport
+    var queues: WGPURegistryReport
+    var pipeline_layouts: WGPURegistryReport
+    var shader_modules: WGPURegistryReport
+    var bind_group_layouts: WGPURegistryReport
+    var bind_groups: WGPURegistryReport
+    var command_buffers: WGPURegistryReport
+    var render_bundles: WGPURegistryReport
+    var render_pipelines: WGPURegistryReport
+    var compute_pipelines: WGPURegistryReport
+    var query_sets: WGPURegistryReport
+    var buffers: WGPURegistryReport
+    var textures: WGPURegistryReport
+    var texture_views: WGPURegistryReport
+    var samplers: WGPURegistryReport
+
+    fn __init__(
+        out self,
+        adapters: WGPURegistryReport = WGPURegistryReport(),
+        devices: WGPURegistryReport = WGPURegistryReport(),
+        queues: WGPURegistryReport = WGPURegistryReport(),
+        pipeline_layouts: WGPURegistryReport = WGPURegistryReport(),
+        shader_modules: WGPURegistryReport = WGPURegistryReport(),
+        bind_group_layouts: WGPURegistryReport = WGPURegistryReport(),
+        bind_groups: WGPURegistryReport = WGPURegistryReport(),
+        command_buffers: WGPURegistryReport = WGPURegistryReport(),
+        render_bundles: WGPURegistryReport = WGPURegistryReport(),
+        render_pipelines: WGPURegistryReport = WGPURegistryReport(),
+        compute_pipelines: WGPURegistryReport = WGPURegistryReport(),
+        query_sets: WGPURegistryReport = WGPURegistryReport(),
+        buffers: WGPURegistryReport = WGPURegistryReport(),
+        textures: WGPURegistryReport = WGPURegistryReport(),
+        texture_views: WGPURegistryReport = WGPURegistryReport(),
+        samplers: WGPURegistryReport = WGPURegistryReport(),
+    ):
+        self.adapters = adapters
+        self.devices = devices
+        self.queues = queues
+        self.pipeline_layouts = pipeline_layouts
+        self.shader_modules = shader_modules
+        self.bind_group_layouts = bind_group_layouts
+        self.bind_groups = bind_groups
+        self.command_buffers = command_buffers
+        self.render_bundles = render_bundles
+        self.render_pipelines = render_pipelines
+        self.compute_pipelines = compute_pipelines
+        self.query_sets = query_sets
+        self.buffers = buffers
+        self.textures = textures
+        self.texture_views = texture_views
+        self.samplers = samplers
+
+
+struct WGPUGlobalReport(Copyable, ImplicitlyCopyable, Movable):
+    var surfaces: WGPURegistryReport
+    var backend_type: BackendType
+    var vulkan: WGPUHubReport
+    var metal: WGPUHubReport
+    var dx12: WGPUHubReport
+    var gl: WGPUHubReport
+
+    fn __init__(
+        out self,
+        surfaces: WGPURegistryReport = WGPURegistryReport(),
+        backend_type: BackendType = BackendType.undefined,
+        vulkan: WGPUHubReport = WGPUHubReport(),
+        metal: WGPUHubReport = WGPUHubReport(),
+        dx12: WGPUHubReport = WGPUHubReport(),
+        gl: WGPUHubReport = WGPUHubReport(),
+    ):
+        self.surfaces = surfaces
+        self.backend_type = backend_type
+        self.vulkan = vulkan
+        self.metal = metal
+        self.dx12 = dx12
+        self.gl = gl
+
+
+struct WGPUInstanceEnumerateAdapterOptions(Copyable, ImplicitlyCopyable, Movable):
+    var chain: ChainedStruct
+    var backends: InstanceBackend
+
+    fn __init__(
+        out self,
+        chain: ChainedStruct = ChainedStruct(),
+        backends: InstanceBackend = InstanceBackend.all,
+    ):
+        self.chain = chain
+        self.backends = backends
+
+
+struct WGPUBindGroupEntryExtras(Copyable, ImplicitlyCopyable, Movable):
+    var chain: ChainedStruct
+    var buffers: FFIPointer[WGPUBuffer, mut=True]
+    var buffer_count: Int
+    var samplers: FFIPointer[WGPUSampler, mut=True]
+    var sampler_count: Int
+    var texture_views: FFIPointer[WGPUTextureView, mut=True]
+    var texture_view_count: Int
+
+    fn __init__(
+        out self,
+        chain: ChainedStruct = ChainedStruct(),
+        buffers: FFIPointer[WGPUBuffer, mut=True] = {},
+        buffer_count: Int = 0,
+        samplers: FFIPointer[WGPUSampler, mut=True] = {},
+        sampler_count: Int = 0,
+        texture_views: FFIPointer[WGPUTextureView, mut=True] = {},
+        texture_view_count: Int = 0,
+    ):
+        self.chain = chain
+        self.buffers = buffers
+        self.buffer_count = buffer_count
+        self.samplers = samplers
+        self.sampler_count = sampler_count
+        self.texture_views = texture_views
+        self.texture_view_count = texture_view_count
+
+
+struct WGPUBindGroupLayoutEntryExtras(Copyable, ImplicitlyCopyable, Movable):
+    var chain: ChainedStruct
+    var count: UInt32
+
+    fn __init__(
+        out self, chain: ChainedStruct = ChainedStruct(), count: UInt32 = 0
+    ):
+        self.chain = chain
+        self.count = count
+
+
+struct WGPUQuerySetDescriptorExtras(Copyable, ImplicitlyCopyable, Movable):
+    var chain: ChainedStruct
+    var pipeline_statistics: FFIPointer[PipelineStatisticName, mut=True]
+    var pipeline_statistics_count: Int
+
+    fn __init__(
+        out self,
+        chain: ChainedStruct = ChainedStruct(),
+        pipeline_statistics: FFIPointer[
+            PipelineStatisticName, mut=True
+        ] = {},
+        pipeline_statistics_count: Int = 0,
+    ):
+        self.chain = chain
+        self.pipeline_statistics = pipeline_statistics
+        self.pipeline_statistics_count = pipeline_statistics_count
+
+
+struct WGPUSurfaceConfigurationExtras(Copyable, ImplicitlyCopyable, Movable):
+    var chain: ChainedStruct
+    var desired_maximum_frame_latency: UInt32
+
+    fn __init__(
+        out self,
+        chain: ChainedStruct = ChainedStruct(),
+        desired_maximum_frame_latency: UInt32 = 0,
+    ):
+        self.chain = chain
+        self.desired_maximum_frame_latency = desired_maximum_frame_latency
+
+
+comptime WGPULogCallback = fn (
+    level: LogLevel,
+    message: FFIPointer[Int8, mut=True],
+    userdata: FFIPointer[NoneType, mut=True],
+) -> None
+
+
+fn generate_report(instance: WGPUInstance, report: FFIPointer[WGPUGlobalReport]):
+    external_call[
+        "wgpuGenerateReport",
+        NoneType,
+        WGPUInstance,
+        type_of(report),
+    ](instance, report)
+
+
+fn instance_enumerate_adapters(
+    instance: WGPUInstance,
+    options: FFIPointer[WGPUInstanceEnumerateAdapterOptions],
+    adapters: FFIPointer[WGPUAdapter],
+) -> Int:
+    return external_call[
+        "wgpuInstanceEnumerateAdapters",
+        Int,
+        WGPUInstance,
+        type_of(options),
+        type_of(adapters),
+    ](
+        instance, options, adapters
+    )
+
+
+fn queue_submit_for_index(
+    queue: WGPUQueue,
+    command_count: Int,
+    commands: FFIPointer[WGPUCommandBuffer],
+) -> WGPUSubmissionIndex:
+    return external_call[
+        "wgpuQueueSubmitForIndex",
+        WGPUSubmissionIndex,
+        WGPUQueue,
+        Int,
+        type_of(commands),
+    ](queue, command_count, commands)
+
+
+fn device_poll(
+    device: WGPUDevice,
+    wait: Bool = False,
+    wrapped_submission_index: FFIPointer[WGPUWrappedSubmissionIndex] = {},
+) -> Bool:
+    \"\"\"Returns true if the queue is empty, or false if there are more queue submissions still in flight.
+    \"\"\"
+    return external_call[
+        "wgpuDevicePoll",
+        Bool,
+        WGPUDevice,
+        Bool,
+        type_of(wrapped_submission_index)
+    ](
+        device,
+        wait,
+        wrapped_submission_index,
+    )
+
+
+fn set_log_callback(
+    callback: WGPULogCallback, userdata: FFIPointer[NoneType, mut=True]
+):
+    _ = external_call[
+        "wgpuSetLogCallback",
+        NoneType,
+        WGPULogCallback,
+        type_of(userdata),
+    ](callback, userdata)
+
+
+fn set_log_level(level: LogLevel):
+    _ = external_call["wgpuSetLogLevel", NoneType, Int](level.value)
+
+
+fn get_version() -> UInt32:
+    return external_call["wgpuGetVersion", UInt32]()
+
+
+fn render_pass_encoder_set_push_constants(
+    encoder: WGPURenderPassEncoder,
+    stages: ShaderStage,
+    offset: UInt32,
+    size_bytes: UInt32,
+    data: FFIPointer[NoneType, mut=True],
+):
+    _ = external_call[
+        "wgpuRenderPassEncoderSetPushConstants",
+        NoneType,
+        WGPURenderPassEncoder,
+        ShaderStage,
+        UInt32,
+        UInt32,
+        FFIPointer[NoneType, mut=True],
+    ](
+        encoder, stages, offset, size_bytes, data
+    )
+
+
+fn render_pass_encoder_multi_draw_indirect(
+    encoder: WGPURenderPassEncoder,
+    buffer: WGPUBuffer,
+    offset: UInt64,
+    count: UInt32,
+):
+    _ = external_call[
+        "wgpuRenderPassEncoderMultiDrawIndirect",
+        NoneType,
+        WGPURenderPassEncoder,
+        WGPUBuffer,
+        UInt64,
+        UInt32,
+    ](encoder, buffer, offset, count)
+
+
+fn render_pass_encoder_multi_draw_indexed_indirect(
+    encoder: WGPURenderPassEncoder,
+    buffer: WGPUBuffer,
+    offset: UInt64,
+    count: UInt32,
+):
+    _ = external_call[
+        "wgpuRenderPassEncoderMultiDrawIndexedIndirect",
+        NoneType,
+        WGPURenderPassEncoder,
+        WGPUBuffer,
+        UInt64,
+        UInt32,
+    ](
+        encoder, buffer, offset, count
+    )
+
+
+fn render_pass_encoder_multi_draw_indirect_count(
+    encoder: WGPURenderPassEncoder,
+    buffer: WGPUBuffer,
+    offset: UInt64,
+    count_buffer: WGPUBuffer,
+    count_buffer_offset: UInt64,
+    max_count: UInt32,
+):
+    _ = external_call[
+        "wgpuRenderPassEncoderMultiDrawIndirectCount",
+        NoneType,
+        WGPURenderPassEncoder,
+        WGPUBuffer,
+        UInt64,
+        WGPUBuffer,
+        UInt64,
+        UInt32,
+    ](
+        encoder, buffer, offset, count_buffer, count_buffer_offset, max_count
+    )
+
+
+fn render_pass_encoder_multi_draw_indexed_indirect_count(
+    encoder: WGPURenderPassEncoder,
+    buffer: WGPUBuffer,
+    offset: UInt64,
+    count_buffer: WGPUBuffer,
+    count_buffer_offset: UInt64,
+    max_count: UInt32,
+):
+    _ = external_call[
+        "wgpuRenderPassEncoderMultiDrawIndexedIndirectCount",
+        NoneType,
+        WGPURenderPassEncoder,
+        WGPUBuffer,
+        UInt64,
+        WGPUBuffer,
+        UInt64,
+        UInt32,
+    ](
+        encoder, buffer, offset, count_buffer, count_buffer_offset, max_count
+    )
+
+
+fn compute_pass_encoder_begin_pipeline_statistics_query(
+    compute_pass_encoder: WGPUComputePassEncoder,
+    query_set: WGPUQuerySet,
+    query_index: UInt32,
+):
+    _ = external_call[
+        "wgpuComputePassEncoderBeginPipelineStatisticsQuery",
+        NoneType, WGPUComputePassEncoder, WGPUQuerySet, UInt32
+    ](
+        compute_pass_encoder, query_set, query_index
+    )
+
+
+fn compute_pass_encoder_end_pipeline_statistics_query(
+    compute_pass_encoder: WGPUComputePassEncoder,
+):
+    _ = external_call[
+        "wgpuComputePassEncoderEndPipelineStatisticsQuery",
+        NoneType,
+        WGPUComputePassEncoder
+    ](compute_pass_encoder)
+
+
+fn render_pass_encoder_begin_pipeline_statistics_query(
+    render_pass_encoder: WGPURenderPassEncoder,
+    query_set: WGPUQuerySet,
+    query_index: UInt32,
+):
+    _ = external_call[
+        "wgpuRenderPassEncoderBeginPipelineStatisticsQuery",
+        NoneType,
+        WGPURenderPassEncoder,
+        WGPUQuerySet,
+        UInt32,
+    ](
+        render_pass_encoder, query_set, query_index
+    )
+
+
+fn render_pass_encoder_end_pipeline_statistics_query(
+    render_pass_encoder: WGPURenderPassEncoder,
+):
+    _ = external_call[
+        "wgpuRenderPassEncoderEndPipelineStatisticsQuery",
+        NoneType,
+        WGPURenderPassEncoder
+    ](render_pass_encoder)
+
+fn surface_capabilities_free_members(capabilities: FFIPointer[WGPUSurfaceCapabilities]):
+   external_call["wgpuSurfaceCapabilitiesFreeMembers", NoneType, type_of(capabilities)](capabilities)
+"""
+
+    with open("wgpu/_cffi.mojo", "w+") as f:
+        f.write(output)

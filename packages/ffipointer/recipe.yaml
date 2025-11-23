@@ -1,34 +1,21 @@
 package:
-  name: wgpu-mojo
+  name: ffipointer
   version: "0.1.0"
 
 source:
-  - path: .
+  path: .
 
 build:
   number: 0
   script:
     - mkdir -p $PREFIX/lib/mojo
     - export MODULAR_HOME=$BUILD_PREFIX/share/max
-    - mojo package shimmer -o $PREFIX/lib/mojo/shimmer.mojopkg -I $PREFIX/lib/mojo/
+    - mojo package ffipointer -o $PREFIX/lib/mojo/ffipointer.mojopkg
 
 requirements:
   build:
     - mojo >=0.25.7.0.dev2025110305,<0.26
     - max >=25.7.0.dev2025110305,<26
-    - glfw-mojo
-    - ffipointer
-    - portaudio-mojo
-    - wgpu-mojo
-  host:
-    - glfw-mojo
-    - ffipointer
-    - wgpu-mojo
-    - portaudio-mojo
   run:
     - mojo >=0.25.7.0.dev2025110305,<0.26
     - max >=25.7.0.dev2025110305,<26
-    - glfw-mojo
-    - wgpu-mojo
-    - ffipointer
-    - portaudio-mojo

@@ -1,0 +1,15 @@
+[package]
+name = "wgpu-mojo"
+version = "0.1.0"
+description = "WebGPU bindings for Mojo"
+
+[package.build]
+backend = { name = "pixi-build-rattler-build", version = "*" }
+
+[package.host-dependencies]
+glfw-mojo = { path = "../glfw" }
+ffipointer = { path = "../ffipointer" }
+
+
+[tasks]
+gen = "python gen_c.py webgpu.json && mojo format wgpu"
