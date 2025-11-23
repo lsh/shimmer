@@ -15,22 +15,13 @@ struct Frame(Movable):
     `Frame` is associated supports it.
     """
 
-    fn _submit_inner(mut self):
-        self._raw_frame._submit_inner()
-
     fn texture_view(ref self) -> ArcPointer[wgpu.TextureView]:
         return self._raw_frame._swap_chain_texture
 
-    fn submit(mut self):
-        self._submit_inner()
+    fn submit(deinit self):
+        self._raw_frame^.submit()
 
     fn command_encoder(
         ref self,
-    ) raises -> ref [
-        self._raw_frame._command_encoder._value
-    ] wgpu.CommandEncoder:
-        return self._raw_frame._command_encoder[][]
-
-    fn __del__(deinit self):
-        if not self._raw_frame.is_submitted():
-            self._submit_inner()
+    ) -> ref [self._raw_frame._command_encoder] wgpu.CommandEncoder:
+        return self._raw_frame._command_encoder

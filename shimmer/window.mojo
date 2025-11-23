@@ -28,11 +28,14 @@ struct Window:
         self.msaa_samples = 0
         self.frame_count = 0
         self.clear_color = wgpu.Color()
-        self.device = ArcPointer(adapter.request_device())
+        self.device = ArcPointer(adapter.request_device({}))
         self.queue = ArcPointer(self.device[].get_queue())
         self.surface = surface^
         var surface_capabilities = self.surface.get_capabilities(adapter)
-        var surface_format = surface_capabilities.formats()[0]
+        var formats = surface_capabilities.formats()
+        if len(formats) == 0:
+            raise Error("No surface formats available")
+        var surface_format = formats[0]
         self.surface_conf = wgpu.SurfaceConfiguration(
             width=width,
             height=height,

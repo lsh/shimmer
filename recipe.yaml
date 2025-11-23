@@ -1,0 +1,28 @@
+package:
+  name: wgpu-mojo
+  version: "0.1.0"
+
+source:
+  - path: .
+
+build:
+  number: 0
+  script:
+    - mkdir -p $PREFIX/lib/mojo
+    # build glfw-mojo
+    - git clone https://github.com/lsh/glfw-mojo.git
+    - cd glfw-mojo && mojo package glfw -o glfw.mojopkg
+    - cp glfw.mojopkg $PREFIX/lib/mojo/
+    - cd ..
+    # build wgpu-mojo
+    - git clone https://github.com/lsh/wgpu-mojo.git
+    - cd wgpu-mojo && mojo package wgpu -o wgpu.mojopkg -I $PREFIX/lib/mojo/
+    - cp wgpu.mojopkg $PREFIX/lib/mojo/
+    - cd ..
+    # final package
+    - mojo package shimmer -o $PREFIX/lib/mojo/shimmer.mojopkg -I $PREFIX/lib/mojo/
+
+requirements:
+  build:
+    - mojo >=0.25.7.0.dev2025110305,<0.26
+    - git

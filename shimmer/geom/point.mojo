@@ -1,6 +1,3 @@
-from . import Vec2, Vec3, Vec4
-
-
 alias Point2 = Vec2
 """
 A 2-dimensional point type.
