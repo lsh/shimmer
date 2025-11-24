@@ -6,18 +6,20 @@ struct Rect[dtype: DType = DType.float32](
     Defines a Rectangle's bounds across the x and y axes.
     """
 
-    var x: Tuple[Scalar[dtype], Scalar[dtype]]
+    var x: InlineArray[Scalar[Self.dtype], 2]
     """
     The start and end positions of the Rectangle on the x axis.
     """
-    var y: Tuple[Scalar[dtype], Scalar[dtype]]
+    var y: InlineArray[Scalar[Self.dtype], 2]
     """
     The start and end positions of the Rectangle on the y axis.
     """
 
-    fn __init__(out self, *, width: Scalar[dtype], height: Scalar[dtype]):
-        self.x = (Scalar[dtype](0), Scalar[dtype](0))
-        self.y = (width, height)
+    fn __init__(
+        out self, *, width: Scalar[Self.dtype], height: Scalar[Self.dtype]
+    ):
+        self.x = [Scalar[Self.dtype](0), Scalar[Self.dtype](0)]
+        self.y = [width, height]
 
 
 @fieldwise_init
@@ -26,23 +28,23 @@ struct Padding[dtype: DType = DType.float32](Copyable, Movable):
     The distance between the inner edge of a border and the outer edge of the inner content.
     """
 
-    var x: Tuple[Scalar[dtype], Scalar[dtype]]
+    var x: InlineArray[Scalar[Self.dtype], 2]
     """
     Padding on the start and end of the *x* axis.
     """
-    var y: Tuple[Scalar[dtype], Scalar[dtype]]
+    var y: InlineArray[Scalar[Self.dtype], 2]
     """
     Padding on the start and end of the *y* axis.
     """
 
     @staticmethod
     fn none() -> Self:
-        alias zero = Scalar[dtype](0)
-        return Self((zero, zero), (zero, zero))
+        alias zero = Scalar[Self.dtype](0)
+        return Self([zero, zero], [zero, zero])
 
 
 @fieldwise_init
-struct Corner(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
+struct Corner(Copyable, Equatable, ImplicitlyCopyable, Movable):
     """
     Either of the four corners of a **Rect**."""
 

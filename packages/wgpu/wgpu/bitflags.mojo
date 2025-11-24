@@ -1,6 +1,6 @@
 @fieldwise_init
 @register_passable("trivial")
-struct BufferUsage(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
+struct BufferUsage(Copyable, Equatable, ImplicitlyCopyable, Movable):
     var value: UInt32
 
     fn __eq__(self, rhs: Self) -> Bool:
@@ -37,7 +37,7 @@ struct BufferUsage(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
 @fieldwise_init
 @register_passable("trivial")
 struct ColorWriteMask(
-    Copyable, EqualityComparable, ImplicitlyCopyable, Movable
+    Copyable, Equatable, ImplicitlyCopyable, Movable
 ):
     var value: UInt32
 
@@ -69,7 +69,7 @@ struct ColorWriteMask(
 
 @fieldwise_init
 @register_passable("trivial")
-struct MapMode(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
+struct MapMode(Copyable, Equatable, ImplicitlyCopyable, Movable):
     var value: UInt32
 
     fn __eq__(self, rhs: Self) -> Bool:
@@ -97,7 +97,7 @@ struct MapMode(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
 
 @fieldwise_init
 @register_passable("trivial")
-struct ShaderStage(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
+struct ShaderStage(Copyable, Equatable, ImplicitlyCopyable, Movable):
     var value: UInt32
 
     fn __eq__(self, rhs: Self) -> Bool:
@@ -126,7 +126,7 @@ struct ShaderStage(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
 
 @fieldwise_init
 @register_passable("trivial")
-struct TextureUsage(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
+struct TextureUsage(Copyable, Equatable, ImplicitlyCopyable, Movable):
     var value: UInt32
 
     fn __eq__(self, rhs: Self) -> Bool:
@@ -160,7 +160,7 @@ struct TextureUsage(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
 
 @fieldwise_init
 struct InstanceBackend(
-    Copyable, EqualityComparable, ImplicitlyCopyable, Movable
+    Copyable, Equatable, ImplicitlyCopyable, Movable
 ):
     var value: UInt32
 
@@ -191,7 +191,7 @@ struct InstanceBackend(
 
 
 @fieldwise_init
-struct InstanceFlag(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
+struct InstanceFlag(Copyable, Equatable, ImplicitlyCopyable, Movable):
     var value: UInt32
 
     fn __eq__(self, rhs: Self) -> Bool:
@@ -216,7 +216,7 @@ struct InstanceFlag(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
 
 
 @fieldwise_init
-struct Dx12Compiler(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
+struct Dx12Compiler(Copyable, Equatable, ImplicitlyCopyable, Movable):
     var value: UInt32
 
     fn __eq__(self, rhs: Self) -> Bool:
@@ -241,7 +241,7 @@ struct Dx12Compiler(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
 
 @fieldwise_init
 struct Gles3MinorVersion(
-    Copyable, EqualityComparable, ImplicitlyCopyable, Movable
+    Copyable, Equatable, ImplicitlyCopyable, Movable
 ):
     var value: UInt32
 
@@ -268,7 +268,7 @@ struct Gles3MinorVersion(
 
 @fieldwise_init
 struct PipelineStatisticName(
-    Copyable, EqualityComparable, ImplicitlyCopyable, Movable
+    Copyable, Equatable, ImplicitlyCopyable, Movable
 ):
     var value: UInt32
 
@@ -296,7 +296,7 @@ struct PipelineStatisticName(
 
 @fieldwise_init
 struct NativeQueryType(
-    Copyable, EqualityComparable, ImplicitlyCopyable, Movable
+    Copyable, Equatable, ImplicitlyCopyable, Movable
 ):
     var value: UInt32
 

@@ -14,8 +14,7 @@ build:
 
 requirements:
   build:
-    - mojo >=0.25.7.0.dev2025110305,<0.26
-    - max >=25.7.0.dev2025110305,<26
+    - max >=26.0
     - glfw-mojo
     - ffipointer
     - portaudio-mojo
@@ -26,8 +25,7 @@ requirements:
     - wgpu-mojo
     - portaudio-mojo
   run:
-    - mojo >=0.25.7.0.dev2025110305,<0.26
-    - max >=25.7.0.dev2025110305,<26
+    - max >=26.0
     - glfw-mojo
     - wgpu-mojo
     - ffipointer

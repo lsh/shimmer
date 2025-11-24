@@ -1,7 +1,7 @@
 [workspace]
 authors = ["Lukas Hermann"]
 platforms = ["osx-arm64"]
-channels = ["https://conda.modular.com/max-nightly", "conda-forge"]
+channels = ["https://prefix.dev/max-nightly", "conda-forge"]
 preview = ["pixi-build"]
 
 [package]
@@ -20,8 +20,7 @@ portaudio-mojo = { path = "packages/portaudio" }
 kissfft-mojo = { path = "packages/kissfft" }
 
 [dependencies]
-mojo = ">=0.25.7.0.dev2025110305,<0.26"
-max = ">=25.7.0.dev2025110305,<26"
+max = ">=26.0"
 ffipointer = { path = "packages/ffipointer" }
 wgpu-mojo = { path = "packages/wgpu" }
 glfw-mojo = { path = "packages/glfw" }
@@ -29,6 +28,7 @@ portaudio-mojo = { path = "packages/portaudio" }
 kissfft-mojo = { path = "packages/kissfft" }
 glfw = ">=3.4,<4"
 wgpu-native = ">=22.1.0,<23"
+mojo = ">=0.26.1.0.dev2025112617,<0.27"
 
 [tasks]
 setup = { cmd = "mkdir -p build" }
