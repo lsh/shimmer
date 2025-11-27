@@ -5,7 +5,7 @@ channels = ["https://prefix.dev/max-nightly", "conda-forge"]
 preview = ["pixi-build"]
 
 [package]
-name = "Shimmer"
+name = "shimmer"
 version = "0.1.0"
 description = "A creative coding framework for Mojo"
 
