@@ -24,7 +24,7 @@ struct Version(Copyable, ImplicitlyCopyable, Movable, Writable):
 
 @fieldwise_init
 struct Action(
-    Copyable, EqualityComparable, ImplicitlyCopyable, Movable, Writable
+    Copyable, Equatable, ImplicitlyCopyable, Movable, Writable
 ):
     var _value: Int32
     comptime release = Self(_cffi.GLFW_RELEASE)
@@ -44,7 +44,7 @@ struct Action(
 
 
 @fieldwise_init
-struct Hat(Copyable, EqualityComparable, ImplicitlyCopyable, Movable, Writable):
+struct Hat(Copyable, Equatable, ImplicitlyCopyable, Movable, Writable):
     var _value: Int32
     comptime centered = Self(_cffi.GLFW_HAT_CENTERED)
     comptime up = Self(_cffi.GLFW_HAT_UP)
@@ -81,7 +81,7 @@ struct Hat(Copyable, EqualityComparable, ImplicitlyCopyable, Movable, Writable):
 
 
 @fieldwise_init
-struct Key(Copyable, EqualityComparable, ImplicitlyCopyable, Movable, Writable):
+struct Key(Copyable, Equatable, ImplicitlyCopyable, Movable, Writable):
     var _value: Int32
 
     comptime unknown = Self(-1)
@@ -465,7 +465,7 @@ struct Key(Copyable, EqualityComparable, ImplicitlyCopyable, Movable, Writable):
 
 
 @fieldwise_init
-struct Mod(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
+struct Mod(Copyable, Equatable, ImplicitlyCopyable, Movable):
     var _value: Int32
     comptime shift = Self(0x0001)
     comptime control = Self(0x0002)
@@ -480,7 +480,7 @@ struct Mod(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
 
 @fieldwise_init
 struct MouseButton(
-    Copyable, EqualityComparable, ImplicitlyCopyable, Movable, Writable
+    Copyable, Equatable, ImplicitlyCopyable, Movable, Writable
 ):
     var _value: Int32
     comptime one = Self(_cffi.GLFW_MOUSE_BUTTON_1)
@@ -524,7 +524,7 @@ struct MouseButton(
 
 
 @fieldwise_init
-struct JoyStick(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
+struct JoyStick(Copyable, Equatable, ImplicitlyCopyable, Movable):
     var _value: Int32
 
     comptime one = Self(0)
@@ -588,7 +588,7 @@ struct JoyStick(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
 
 
 @fieldwise_init
-struct Error(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
+struct Error(Copyable, Equatable, ImplicitlyCopyable, Movable):
     var _value: Int32
 
     comptime no_error = Self(0)
@@ -636,7 +636,7 @@ struct Error(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
 
 
 @fieldwise_init
-struct GamepadButton(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
+struct GamepadButton(Copyable, Equatable, ImplicitlyCopyable, Movable):
     var _value: Int32
 
     comptime a = Self(0)
@@ -702,7 +702,7 @@ struct GamepadButton(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
 
 
 @fieldwise_init
-struct GamepadAxis(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
+struct GamepadAxis(Copyable, Equatable, ImplicitlyCopyable, Movable):
     var _value: Int32
 
     comptime left_x = Self(0)
@@ -736,7 +736,7 @@ struct GamepadAxis(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
 
 
 @fieldwise_init
-struct Attribute(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
+struct Attribute(Copyable, Equatable, ImplicitlyCopyable, Movable):
     var _value: Int32
 
     comptime focused = Self(0x00020001)
@@ -788,7 +788,7 @@ struct Attribute(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
 
 @fieldwise_init
 struct FramebufferHint(
-    Copyable, EqualityComparable, ImplicitlyCopyable, Movable
+    Copyable, Equatable, ImplicitlyCopyable, Movable
 ):
     var _value: Int32
 
@@ -849,7 +849,7 @@ struct FramebufferHint(
 
 
 @fieldwise_init
-struct MonitorHint(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
+struct MonitorHint(Copyable, Equatable, ImplicitlyCopyable, Movable):
     var _value: Int32
     comptime refresh_rate = Self(0x0002100F)
 
@@ -862,7 +862,7 @@ struct MonitorHint(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
 
 
 @fieldwise_init
-struct ContextHint(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
+struct ContextHint(Copyable, Equatable, ImplicitlyCopyable, Movable):
     var _value: Int32
 
     comptime client_api = Self(0x00022001)
@@ -938,7 +938,7 @@ struct ContextHint(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
 
 @fieldwise_init
 struct ContextRobustness(
-    Copyable, EqualityComparable, ImplicitlyCopyable, Movable
+    Copyable, Equatable, ImplicitlyCopyable, Movable
 ):
     var _value: Int32
 
@@ -963,7 +963,7 @@ struct ContextRobustness(
 
 
 @fieldwise_init
-struct OpenGLProfile(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
+struct OpenGLProfile(Copyable, Equatable, ImplicitlyCopyable, Movable):
     var _value: Int32
 
     comptime any_profile = Self(0)
@@ -987,7 +987,7 @@ struct OpenGLProfile(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
 
 
 @fieldwise_init
-struct InputMode(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
+struct InputMode(Copyable, Equatable, ImplicitlyCopyable, Movable):
     var _value: Int32
 
     comptime cursor = Self(0x00033001)
@@ -1017,7 +1017,7 @@ struct InputMode(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
 
 
 @fieldwise_init
-struct CursorMode(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
+struct CursorMode(Copyable, Equatable, ImplicitlyCopyable, Movable):
     var _value: Int32
 
     comptime normal = Self(0x00034001)
@@ -1042,7 +1042,7 @@ struct CursorMode(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
 
 @fieldwise_init
 struct ContextReleaseBehavior(
-    Copyable, EqualityComparable, ImplicitlyCopyable, Movable
+    Copyable, Equatable, ImplicitlyCopyable, Movable
 ):
     var _value: Int32
 
@@ -1068,7 +1068,7 @@ struct ContextReleaseBehavior(
 
 @fieldwise_init
 struct ContextCreationApi(
-    Copyable, EqualityComparable, ImplicitlyCopyable, Movable
+    Copyable, Equatable, ImplicitlyCopyable, Movable
 ):
     var _value: Int32
 
@@ -1093,7 +1093,7 @@ struct ContextCreationApi(
 
 
 @fieldwise_init
-struct WaylandHints(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
+struct WaylandHints(Copyable, Equatable, ImplicitlyCopyable, Movable):
     var _value: Int32
 
     comptime prefer_libdecor = Self(0x00038001)
@@ -1117,7 +1117,7 @@ struct WaylandHints(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
 
 
 @fieldwise_init
-struct CursorShape(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
+struct CursorShape(Copyable, Equatable, ImplicitlyCopyable, Movable):
     var _value: Int32
 
     comptime arrow = Self(0x00036001)
@@ -1150,7 +1150,7 @@ struct CursorShape(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
 
 
 @fieldwise_init
-struct MonitorEvent(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
+struct MonitorEvent(Copyable, Equatable, ImplicitlyCopyable, Movable):
     var _value: Int32
     comptime connected = Self(0x00040001)
     comptime disconnected = Self(0x00040002)
@@ -1167,7 +1167,7 @@ struct MonitorEvent(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
 
 @fieldwise_init
 struct SharedInitHints(
-    Copyable, EqualityComparable, ImplicitlyCopyable, Movable
+    Copyable, Equatable, ImplicitlyCopyable, Movable
 ):
     var _value: Int32
 
@@ -1186,7 +1186,7 @@ struct SharedInitHints(
 
 
 @fieldwise_init
-struct MacOSHints(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
+struct MacOSHints(Copyable, Equatable, ImplicitlyCopyable, Movable):
     var _value: Int32
 
     comptime cocoa_chdir_resources = Self(0x00051001)

@@ -121,7 +121,7 @@ struct App[
 
     fn run(var self) raises:
         var ctx = Context()
-        var model = model_fn(ctx)
+        var model = Self.model_fn(ctx)
 
         var model_ctx = (
             wgpu._cffi.FFIPointer[mut=True](UnsafePointer(to=ctx)),
@@ -130,7 +130,7 @@ struct App[
         ctx.window.inner.set_user_pointer[
             Tuple[
                 wgpu._cffi.FFIPointer[Context, mut=True],
-                wgpu._cffi.FFIPointer[ModelType, mut=True],
+                wgpu._cffi.FFIPointer[Self.ModelType, mut=True],
             ]
         ](UnsafePointer(to=model_ctx))
 
@@ -138,10 +138,10 @@ struct App[
             var ctx_ptr, model_ptr = window.get_user_pointer[
                 Tuple[
                     wgpu._cffi.FFIPointer[Context, mut=True],
-                    wgpu._cffi.FFIPointer[ModelType, mut=True],
+                    wgpu._cffi.FFIPointer[Self.ModelType, mut=True],
                 ]
             ]()[]
-            if event_fn:
+            if Self.event_fn:
                 try:
                     ctx_ptr.unsafe_ptr()[].window.surface_conf.width = Int(
                         width
@@ -153,10 +153,10 @@ struct App[
                         ctx_ptr.unsafe_ptr()[].window.device[],
                         ctx_ptr.unsafe_ptr()[].window.surface_conf,
                     )
-                    event_fn.value()(
+                    Self.event_fn.value()(
                         ctx_ptr.unsafe_ptr()[],
                         model_ptr.unsafe_ptr()[],
-                        EventType(
+                        Self.EventType(
                             WindowEvent.resized(
                                 Vec2(Float32(width), Float32(height))
                             )
@@ -167,11 +167,11 @@ struct App[
 
         ctx.window.inner.set_size_callback[resize_cb]()
         run_loop[
-            EventType=EventType,
-            exit_fn=exit_fn,
-            update_fn=update_fn,
-            event_fn=event_fn,
-            view_fn=view_fn,
+            EventType = Self.EventType,
+            exit_fn = Self.exit_fn,
+            update_fn = Self.update_fn,
+            event_fn = Self.event_fn,
+            view_fn = Self.view_fn,
         ](ctx, model^)
         _ = model_ctx
         glfw.terminate()

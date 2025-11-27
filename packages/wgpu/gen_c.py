@@ -137,13 +137,14 @@ def load_spec(path: Path) -> Spec:
 
 def gen_enum(entry: Enum) -> str:
     doc = (
-        "" if entry.doc.strip()
-        == "TODO" else f"""\"\"\"\n    {entry.doc.strip()}\"\"\"\n"""
+        ""
+        if entry.doc.strip() == "TODO"
+        else f"""\"\"\"\n    {entry.doc.strip()}\"\"\"\n"""
     )
     output = f"""
 @fieldwise_init
 @register_passable("trivial")
-struct {entry.name.title().replace("_", "")}(Copyable, EqualityComparable, ImplicitlyCopyable, Movable, Writable):
+struct {entry.name.title().replace("_", "")}(Copyable, Equatable, ImplicitlyCopyable, Movable, Writable):
     {doc}
     var value: UInt32
 
@@ -152,24 +153,17 @@ struct {entry.name.title().replace("_", "")}(Copyable, EqualityComparable, Impli
 """
     for i, e in enumerate(entry.entries):
         ename = e.name.lower()
-        if (
-            entry.name == "texture_view_dimension"
-            or entry.name == "texture_dimension"
-        ):
+        if entry.name == "texture_view_dimension" or entry.name == "texture_dimension":
             ename = ename[::-1]
         output += (
-            f"    comptime {ename} ="
-            f" Self({e.value if hasattr(e, 'value') else i})\n"
+            f"    comptime {ename} = Self({e.value if hasattr(e, 'value') else i})\n"
         )
         if e.doc.strip() != "TODO":
             output += f'    """{e.doc.strip()}"""\n'
     output += """\n    fn write_to(self, mut w: Some[Writer]):\n"""
     for i, e in enumerate(entry.entries):
         ename = e.name.lower()
-        if (
-            entry.name == "texture_view_dimension"
-            or entry.name == "texture_dimension"
-        ):
+        if entry.name == "texture_view_dimension" or entry.name == "texture_dimension":
             ename = ename[::-1]
         output += f"""
         {"" if i == 0 else "el"}if self == Self.{ename}:
@@ -181,13 +175,14 @@ struct {entry.name.title().replace("_", "")}(Copyable, EqualityComparable, Impli
 
 def gen_bitflag(entry: Bitflag) -> str:
     doc = (
-        "" if entry.doc.strip()
-        == "TODO" else f"""\"\"\"\n    {entry.doc.strip()}\"\"\"\n"""
+        ""
+        if entry.doc.strip() == "TODO"
+        else f"""\"\"\"\n    {entry.doc.strip()}\"\"\"\n"""
     )
     output = f"""
 @fieldwise_init
 @register_passable("trivial")
-struct {entry.name.title().replace("_", "")}(Copyable, EqualityComparable, ImplicitlyCopyable, Movable):
+struct {entry.name.title().replace("_", "")}(Copyable, Equatable, ImplicitlyCopyable, Movable):
     {doc}
     var value: UInt32
 
@@ -212,9 +207,7 @@ struct {entry.name.title().replace("_", "")}(Copyable, EqualityComparable, Impli
 """
     for i, e in enumerate(entry.entries):
         if hasattr(e, "value_combination"):
-            combination = " | ".join(
-                f"Self.{val}" for val in e.value_combination
-            )
+            combination = " | ".join(f"Self.{val}" for val in e.value_combination)
             output += f"    comptime {e.name.lower()} = {combination}\n"
         else:
             output += (
@@ -238,8 +231,9 @@ def gen_constant(entry: Constant) -> str:
             val = entry.value
 
     doc = (
-        "" if entry.doc.strip()
-        == "TODO" else f"""\"\"\"\n{entry.doc.strip()}\"\"\"\n"""
+        ""
+        if entry.doc.strip() == "TODO"
+        else f"""\"\"\"\n{entry.doc.strip()}\"\"\"\n"""
     )
     return f"""
 comptime {entry.name.upper()} = {val}
@@ -265,9 +259,7 @@ def sanitize_name(
             else:
                 return f"FFIPointer[WGPU{n}]"
         else:
-            return "WGPU" + name.removeprefix("struct.").title().replace(
-                "_", ""
-            )
+            return "WGPU" + name.removeprefix("struct.").title().replace("_", "")
     elif name.startswith("function_type."):
         return name.removeprefix("function_type.").title().replace("_", "")
     elif name.startswith("object."):
@@ -432,9 +424,7 @@ def gen_function(
     except:
         ret = "None"
     arg_names = [
-        [f"{e.name[:-1]}_count", e.name] if e.type.startswith("array<") else [
-            e.name
-        ]
+        [f"{e.name[:-1]}_count", e.name] if e.type.startswith("array<") else [e.name]
         for e in args
     ]
     arg_names = [arg for arg_item in arg_names for arg in arg_item]
@@ -446,8 +436,9 @@ def gen_function(
     call_args = ", ".join(arg_names)
     types = ", ".join(f"type_of({arg})" for arg in arg_names)
     doc = (
-        "" if entry.doc.strip()
-        == "TODO" else f"""\"\"\"\n    {entry.doc.strip()}\"\"\"\n"""
+        ""
+        if entry.doc.strip() == "TODO"
+        else f"""\"\"\"\n    {entry.doc.strip()}\"\"\"\n"""
     )
     return f"""
 fn {prefix + "_" if prefix else ""}{entry.name}({params}) -> {ret}:
@@ -461,9 +452,7 @@ def gen_callback(entry: Callback):
     params_no_default = ", ".join(
         gen_parameter_type(e, type_only=True, in_function=True) for e in args
     )
-    return (
-        f"\ncomptime {entry.name}_callback = fn({params_no_default}) -> None\n"
-    )
+    return f"\ncomptime {entry.name}_callback = fn({params_no_default}) -> None\n"
 
 
 def gen_object(entry: Object) -> str:
@@ -477,16 +466,15 @@ fn {entry.name}_release(handle: WGPU{name}):
     _ = external_call["wgpu{name}Release", NoneType, type_of(handle)](handle)
 """
     for method in entry.methods:
-        output += gen_function(
-            method, type=name, contains_self=True, prefix=entry.name
-        )
+        output += gen_function(method, type=name, contains_self=True, prefix=entry.name)
     return output
 
 
 def gen_struct(entry: Struct) -> str:
     doc = (
-        "" if entry.doc.strip()
-        == "TODO" else f"""    \"\"\"\n    {entry.doc.strip()}\n    \"\"\"\n"""
+        ""
+        if entry.doc.strip() == "TODO"
+        else f"""    \"\"\"\n    {entry.doc.strip()}\n    \"\"\"\n"""
     )
     output = f"""
 struct WGPU{entry.name.title().replace("_", "")}(Copyable, ImplicitlyCopyable, Movable):
@@ -494,9 +482,7 @@ struct WGPU{entry.name.title().replace("_", "")}(Copyable, ImplicitlyCopyable, M
     if entry.type == "base_in":
         output += "    var next_in_chain: FFIPointer[ChainedStruct, mut=True]\n"
     elif entry.type == "base_out":
-        output += (
-            "    var next_in_chain: FFIPointer[ChainedStructOut, mut=True]\n"
-        )
+        output += "    var next_in_chain: FFIPointer[ChainedStructOut, mut=True]\n"
     elif entry.type == "extension_in":
         output += "    var chain: ChainedStruct\n"
     elif entry.type == "extension_out":
@@ -518,30 +504,24 @@ struct WGPU{entry.name.title().replace("_", "")}(Copyable, ImplicitlyCopyable, M
             )
     output += "\n    fn __init__(out self,\n"
     if entry.type == "base_in":
-        output += (
-            "        next_in_chain: FFIPointer[ChainedStruct, mut=True] = {},\n"
-        )
+        output += "        next_in_chain: FFIPointer[ChainedStruct, mut=True] = {},\n"
     elif entry.type == "base_out":
         output += (
-            "        next_in_chain: FFIPointer[ChainedStructOut, mut=True] ="
-            " {},\n"
+            "        next_in_chain: FFIPointer[ChainedStructOut, mut=True] = {},\n"
         )
     elif entry.type == "extension_in":
         output += "        chain: ChainedStruct = {},\n"
     elif entry.type == "extension_out":
         output += "        chain: ChainedStructOut = {}\n"
     for member in members:
-        if member.type.startswith("enum.") or member.type.startswith(
-            "bitflag."
-        ):
+        if member.type.startswith("enum.") or member.type.startswith("bitflag."):
             ty = gen_parameter_type(member, type_only=True, with_origin=True)
             output += f"\n        {member.name}: {ty} = {ty}(0),\n"
         elif member.type == "bool":
             output += f"\n        {member.name}: Bool = False,"
         elif member.type.startswith("function_type."):
             output += (
-                f"\n        {member.name}: FFIPointer[NoneType, mut=True] ="
-                " {},\n"
+                f"\n        {member.name}: FFIPointer[NoneType, mut=True] = {{}},\n"
             )
         elif member.type.startswith("array<"):
             ty = gen_parameter_type(
@@ -557,8 +537,9 @@ struct WGPU{entry.name.title().replace("_", "")}(Copyable, ImplicitlyCopyable, M
                 with_origin=True,
             )
             owned = (
-                "var " if member.type.startswith("struct.")
-                and not hasattr(member, "pointer") else ""
+                "var "
+                if member.type.startswith("struct.") and not hasattr(member, "pointer")
+                else ""
             )
             output += f"\n        {owned}{member.name}: {ty} = {{}},\n"
     output += "    ):\n"
@@ -572,13 +553,13 @@ struct WGPU{entry.name.title().replace("_", "")}(Copyable, ImplicitlyCopyable, M
         output += "        self.chain = chain\n"
     for member in members:
         take = (
-            "^" if member.type.startswith("struct")
-            and not hasattr(member, "pointer") else ""
+            "^"
+            if member.type.startswith("struct") and not hasattr(member, "pointer")
+            else ""
         )
         if member.type.startswith("array<"):
             output += (
-                f"        self.{member.name[:-1]}_count ="
-                f" {member.name[:-1]}_count\n"
+                f"        self.{member.name[:-1]}_count = {member.name[:-1]}_count\n"
             )
         output += f"        self.{member.name} = {member.name}{take}\n"
 
@@ -614,7 +595,7 @@ if __name__ == "__main__":
 
 @fieldwise_init
 @register_passable("trivial")
-struct NativeSType(Copyable, ImplicitlyCopyable, Movable, EqualityComparable):
+struct NativeSType(Copyable, ImplicitlyCopyable, Movable, Equatable):
     var value: UInt32
 
     fn __eq__(self, rhs: Self) -> Bool:
@@ -635,7 +616,7 @@ struct NativeSType(Copyable, ImplicitlyCopyable, Movable, EqualityComparable):
 
 @fieldwise_init
 @register_passable("trivial")
-struct NativeFeature(Copyable, ImplicitlyCopyable, Movable, EqualityComparable):
+struct NativeFeature(Copyable, ImplicitlyCopyable, Movable, Equatable):
     var value: Int
 
     fn __eq__(self, rhs: Self) -> Bool:
@@ -683,7 +664,7 @@ struct NativeFeature(Copyable, ImplicitlyCopyable, Movable, EqualityComparable):
 
 @fieldwise_init
 @register_passable("trivial")
-struct LogLevel(Copyable, ImplicitlyCopyable, Movable, EqualityComparable):
+struct LogLevel(Copyable, ImplicitlyCopyable, Movable, Equatable):
     var value: Int
 
     fn __eq__(self, rhs: Self) -> Bool:
@@ -699,7 +680,7 @@ struct LogLevel(Copyable, ImplicitlyCopyable, Movable, EqualityComparable):
 
 @fieldwise_init
 @register_passable("trivial")
-struct NativeTextureFormat(Copyable, ImplicitlyCopyable, Movable, EqualityComparable):
+struct NativeTextureFormat(Copyable, ImplicitlyCopyable, Movable, Equatable):
     var value: UInt32
 
     fn __eq__(self, rhs: Self) -> Bool:
@@ -724,7 +705,7 @@ struct NativeTextureFormat(Copyable, ImplicitlyCopyable, Movable, EqualityCompar
 # WGPU SPECIFIC BITFLAGS
 
 @fieldwise_init
-struct InstanceBackend(Copyable, ImplicitlyCopyable, Movable, EqualityComparable):
+struct InstanceBackend(Copyable, ImplicitlyCopyable, Movable, Equatable):
     var value: UInt32
 
     fn __eq__(self, rhs: Self) -> Bool:
@@ -754,7 +735,7 @@ struct InstanceBackend(Copyable, ImplicitlyCopyable, Movable, EqualityComparable
 
 
 @fieldwise_init
-struct InstanceFlag(Copyable, ImplicitlyCopyable, Movable, EqualityComparable):
+struct InstanceFlag(Copyable, ImplicitlyCopyable, Movable, Equatable):
     var value: UInt32
 
     fn __eq__(self, rhs: Self) -> Bool:
@@ -779,7 +760,7 @@ struct InstanceFlag(Copyable, ImplicitlyCopyable, Movable, EqualityComparable):
 
 
 @fieldwise_init
-struct Dx12Compiler(Copyable, ImplicitlyCopyable, Movable, EqualityComparable):
+struct Dx12Compiler(Copyable, ImplicitlyCopyable, Movable, Equatable):
     var value: UInt32
 
     fn __eq__(self, rhs: Self) -> Bool:
@@ -803,7 +784,7 @@ struct Dx12Compiler(Copyable, ImplicitlyCopyable, Movable, EqualityComparable):
 
 
 @fieldwise_init
-struct Gles3MinorVersion(Copyable, ImplicitlyCopyable, Movable, EqualityComparable):
+struct Gles3MinorVersion(Copyable, ImplicitlyCopyable, Movable, Equatable):
     var value: UInt32
 
     fn __eq__(self, rhs: Self) -> Bool:
@@ -828,7 +809,7 @@ struct Gles3MinorVersion(Copyable, ImplicitlyCopyable, Movable, EqualityComparab
 
 
 @fieldwise_init
-struct PipelineStatisticName(Copyable, ImplicitlyCopyable, Movable, EqualityComparable):
+struct PipelineStatisticName(Copyable, ImplicitlyCopyable, Movable, Equatable):
     var value: UInt32
 
     fn __eq__(self, rhs: Self) -> Bool:
@@ -854,7 +835,7 @@ struct PipelineStatisticName(Copyable, ImplicitlyCopyable, Movable, EqualityComp
 
 
 @fieldwise_init
-struct NativeQueryType(Copyable, ImplicitlyCopyable, Movable, EqualityComparable):
+struct NativeQueryType(Copyable, ImplicitlyCopyable, Movable, Equatable):
     var value: UInt32
 
     fn __eq__(self, rhs: Self) -> Bool:
@@ -881,9 +862,7 @@ struct NativeQueryType(Copyable, ImplicitlyCopyable, Movable, EqualityComparable
         f.write(constants)
     functions = "\n".join(gen_function(e) for e in spec.functions)
     objects = "\n".join(gen_object(e) for e in spec.objects)
-    function_types = "\n".join(
-        gen_function_type(e) for e in spec.function_types
-    )
+    function_types = "\n".join(gen_function_type(e) for e in spec.function_types)
     output = """
 from ffpointer import FFIPointer
 
