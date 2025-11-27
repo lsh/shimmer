@@ -1,5 +1,5 @@
 package:
-  name: wgpu-mojo
+  name: shimmer 
   version: "0.1.0"
 
 source:
